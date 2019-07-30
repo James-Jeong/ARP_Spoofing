@@ -3,7 +3,6 @@
 #ifndef STDAFX_H
 #define STDAFX_H
 
-#include <iostream>
 #include <pcap.h>
 #include <stdio.h>
 #include <netinet/in.h>
@@ -15,6 +14,10 @@
 #include <errno.h>
 #include <ctype.h>
 
+#include "mod_UDP.h"
+#include "mod_TCP.h"
+#include "mod_IP.h"
+#include "mod_Eth.h"
 #include "mod_ARP.h"
 
 #include <netdb.h>
@@ -30,7 +33,5 @@
 #include "libnet-macros.h"
 #include "libnet-structures.h"
 #include "libnet-types.h"
-
-using namespace std;
 
 #endif

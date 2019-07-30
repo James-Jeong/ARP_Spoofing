@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "mod_IP.h"
 
 char* IP_header::Print_IP(const u_char* Packet_DATA){
     struct libnet_ipv4_hdr* IH = (struct libnet_ipv4_hdr*)(Packet_DATA);

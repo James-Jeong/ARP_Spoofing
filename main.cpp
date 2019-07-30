@@ -1,12 +1,8 @@
 // sudo apt install libnet-dev
 
-#include <fstream>
+//#include <fstream>
 #include <pthread.h>
 #include "stdafx.h"
-#include "mod_Eth.h"
-#include "mod_IP.h"
-#include "mod_TCP.h"
-#include "mod_UDP.h"
 
 #define REQ_CNT 20
 
@@ -102,7 +98,7 @@ int main(int argc, char* argv[]) {
   }
 
 // ########## Make a file to write ##########
-  ofstream writeFile1("Result_text.txt");
+//  ofstream writeFile1("Result_text.txt");
 
 // ########## Make a thread ##########
   pthread_t thread;
@@ -208,7 +204,7 @@ int main(int argc, char* argv[]) {
     printf("-------_Ethernet_-------\n");
     uint8_t tmp = 0; // Ethernet header size
     Ethernet_header Eh;
-    //tmp = Eh.Print_Eth(packet);
+    tmp = Eh.Print_Eth(packet);
     //printf("packet : %d\n", tmp);
     if(tmp > 14) break;
     printf("\n");

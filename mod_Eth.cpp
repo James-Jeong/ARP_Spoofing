@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "mod_Eth.h"
 
 uint8_t Ethernet_header::Print_Eth(const u_char* Packet_DATA){
     struct libnet_ethernet_hdr* EH = (struct libnet_ethernet_hdr*)(Packet_DATA);

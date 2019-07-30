@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "mod_TCP.h"
 
 int TCP_header::Print_TCP(const u_char* Packet_DATA){
     struct libnet_tcp_hdr* TH = (struct libnet_tcp_hdr*)(Packet_DATA);
