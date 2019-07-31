@@ -69,7 +69,7 @@ void ARP_header::tomar_ip_addr(struct in_addr* in_addr, char* str){
 			bcopy(hostp->h_addr, in_addr, hostp->h_length);
 		}
 		else{
-			fprintf(stderr, "send_arp: unknown host [%s].\n", str);
+			fprintf(stderr, "send_arp: unknown host [%s]\n", str);
 			exit(1);
 		}
 	}
@@ -82,22 +82,22 @@ void ARP_header::tomar_mac_addr(u_char* buf, char* str){
 		//printf("%s\n", str);
 		if(!(c = tolower(*str++))){
 			//printf("%s\n", str);
-			die("Invalid hardware address");
+			die("Invalid mac addr");
 		}
 		if(isdigit(c)) val = c - '0';
 		else if(c >= 'a' && c <= 'f') val = c - 'a' + 10;
-		else die("Invalid hardware address");
+		else die("Invalid mac addr");
 
 		*buf = val << 4;
 		if(!(c = tolower(*str++))){
 			//printf("%s\n", str);
-			die("Invalid hardware address");
+			die("Invalid mac addr");
 		}
 		if(isdigit(c)) val = c - '0';
 		else if(c >= 'a' && c <= 'f') val = c - 'a' + 10;
 		else{
 			//printf("%s\n", str);
-			die("Invalid hardware address");
+			die("Invalid mac addr");
 		}
 
 		*buf++ |= val;

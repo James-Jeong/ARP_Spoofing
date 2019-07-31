@@ -29,7 +29,7 @@ void* Attack(void* info){
 
   attack_packet.tomar_ip_addr(&src_in_addr, PP->aIPaddr);
   attack_packet.tomar_ip_addr(&target_in_addr, PP->argv_1);
-  attack_packet.tomar_mac_addr(attack_packet.Destination_mac_addr, PP->argv_2);
+ attack_packet.tomar_mac_addr(attack_packet.Destination_mac_addr, PP->argv_2);
   attack_packet.tomar_mac_addr(attack_packet.target_mac_addr, PP->argv_2);
   attack_packet.tomar_mac_addr(attack_packet.src_mac_addr, PP->aMACaddr);
   attack_packet.tomar_mac_addr(attack_packet.sender_mac_addr, PP->aMACaddr);
