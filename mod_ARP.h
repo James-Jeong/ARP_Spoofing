@@ -20,14 +20,14 @@
 // target_ip_addr : victim's ip address
 
 struct ARP_header{
+	u_char Destination_mac_addr[ETH_MAC_ADDR_LEN];
+	u_char src_mac_addr[ETH_MAC_ADDR_LEN];
+	u_short frame_type;
 	u_short mac_type;
 	u_short prot_type;
 	u_char mac_addr_size;
 	u_char prot_addr_size;
 	u_short op;
-	//u_short frame_type;
-	u_char Destination_mac_addr[ETH_MAC_ADDR_LEN];
-	u_char src_mac_addr[ETH_MAC_ADDR_LEN];
 	u_char sender_mac_addr[ETH_MAC_ADDR_LEN];
 	u_char sender_ip_addr[IP_ADDR_LEN];
 	u_char target_mac_addr[ETH_MAC_ADDR_LEN];
