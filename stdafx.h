@@ -10,6 +10,7 @@
 #include <arpa/inet.h>
 #include <stdint.h>
 #include <string.h>
+#include <string>
 #include <stdlib.h>
 #include <errno.h>
 #include <ctype.h>
