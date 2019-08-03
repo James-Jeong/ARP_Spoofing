@@ -19,8 +19,8 @@ struct Parameter_Pthread{
 };
 
 // ########## Sending contaminated ARP packets ##########
-// sip : attacker's ip
-// smac : attacker's wrong mac
+// sip : gateway's ip
+// smac : attacker's mac
 // tip : victim's ip
 // tmac : victim's mac
 void Attack(void* info, pcap_t* handle){
