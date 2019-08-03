@@ -69,17 +69,18 @@ void EndOfProgram(char* str){
 
 void tomar_ip_addr(struct in_addr* in_addr, char* str){
 	struct hostent* hostp;
-
-	in_addr->s_addr = inet_addr(str);
-	if(in_addr->s_addr == -1){
-		if((hostp = gethostbyname(str))){
+	//in_addr->s_addr = inet_addr(str);
+	int a = inet_aton(str, in_addr);
+	//printf("a : %d\n", a);
+	/*if(a == 0){
+		if(hostp = gethostbyname(str)){
 			bcopy(hostp->h_addr, in_addr, hostp->h_length);
 		}
 		else{
 			fprintf(stderr, "send_arp: unknown host [%s]\n", str);
 			exit(1);
 		}
-	}
+	}*/
 }
 
 void tomar_mac_addr(u_char* buf, char* str){

