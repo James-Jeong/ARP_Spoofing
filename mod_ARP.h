@@ -29,9 +29,9 @@ struct ARP_header{
 	u_char prot_addr_size;
 	u_short op;
 	u_char sender_mac_addr[ETH_MAC_ADDR_LEN];
-	u_char sender_ip_addr[IP_ADDR_LEN];
+	u_int8_t sender_ip_addr[IP_ADDR_LEN];
 	u_char target_mac_addr[ETH_MAC_ADDR_LEN];
-	u_char target_ip_addr[IP_ADDR_LEN];
+	u_int8_t target_ip_addr[IP_ADDR_LEN];
 	u_char padding[18];
 };
 
