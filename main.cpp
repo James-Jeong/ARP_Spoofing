@@ -221,7 +221,7 @@ int main(int argc, char* argv[]) {
   struct ARP_header* temp = (struct ARP_header*)(packet);
   //check_ARP(packet);
   char* sender_mac = (char*)malloc(sizeof(char) * 20);
-  sprintf(sender_mac, "%x%x%x%x%x%x", temp->sender_mac_addr[0], 
+  sprintf(sender_mac, "%02x%02x%02x%02x%02x%02x", temp->sender_mac_addr[0], 
 temp->sender_mac_addr[1], temp->sender_mac_addr[2], temp->sender_mac_addr[3], temp->sender_mac_addr[4], temp->sender_mac_addr[5]);
   printf("sender_mac : %s\n", sender_mac);
 
