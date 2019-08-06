@@ -5,21 +5,11 @@ pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 using namespace std;
 
-
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
 int main(int argc, char* argv[]) {
 	if (argc != 3) {
 		usage();
 		return -1;
 	}
-
-// ########################################
-
-// ########## Make a file to write ##########
-//	ofstream writeFile1("Result_text.txt");
 
 // ########## Make a thread ##########
 	pthread_t thread[PTHREAD_NUM];
@@ -42,8 +32,9 @@ int main(int argc, char* argv[]) {
 
 // ########## Make a socket to find my IP & MAC address ##########
 	char* a_mac_addr = (char*)malloc(128);
-	char* s_ip_addr = (char*)malloc(128);
 	if(a_mac_addr == NULL){ perror("a_mac_addr malloc error"); exit(1); }
+	char* s_ip_addr = (char*)malloc(128);
+	if(s_ip_addr == NULL){ perror("s_ip_addr malloc error"); exit(1); }
 	pthread_create(&thread[0], NULL, find_My_Mac, (void*)(a_mac_addr));
 	pthread_join(thread[0], (void**)(&s_ip_addr));
 	printf("[ Success to find my mac address : %s ]\n", a_mac_addr);
@@ -52,12 +43,25 @@ int main(int argc, char* argv[]) {
 // ################ Using pcap sendpacket ################
 	char* sender_mac = (char*)malloc(sizeof(char) * 50);
 	if(sender_mac == NULL){ perror("sender_mac malloc error"); exit(1); }
+
+	pt2.sip = (char*)malloc(strlen(s_ip_addr)); // sender's ip address
+	if(pt2.sip == NULL){ perror("pt2.sip malloc error"); exit(1); }
+	pt2.smac = (char*)malloc(strlen(a_mac_addr)); // sender's mac address
+	if(pt2.smac == NULL){ perror("pt2.smac malloc error"); exit(1); }
+
+	pt2.tip = (char*)malloc(strlen(argv[1])); // attacker's ip address
+	if(pt2.tip == NULL){ perror("pt2.tip malloc error"); exit(1); }
+	pt2.tmac = (char*)malloc(strlen(sender_mac)); // attacker's mac address
+	if(pt2.tmac == NULL){ perror("pt2.tmac malloc error"); exit(1); }
+
+
 	strncpy(pt2.sip, s_ip_addr, strlen(s_ip_addr));
 	strncpy(pt2.smac, a_mac_addr, strlen(a_mac_addr));
 	strncpy(pt2.tip, argv[1], strlen(argv[1]));
 	strncpy(pt2.tmac, sender_mac, strlen(sender_mac));
 	pt2.handle = handle;
 	pthread_create(&thread[1], NULL, find_Sender_Mac, (void*)&pt2);
+	
 	pthread_join(thread[1], (void**)(&sender_mac));
 	printf("[ Success to find sender's mac address : %s ]\n", sender_mac);
 // ########################################
@@ -77,7 +81,7 @@ int main(int argc, char* argv[]) {
 	strncpy(pt.sip, argv[2], strlen(argv[2])); // gateway ip
 	strncpy(pt.smac, a_mac_addr, strlen(a_mac_addr));
 	strncpy(pt.tip, argv[1], strlen(argv[1]));
-	strncpy(pt.tmac, sender_mac, sizeof(sender_mac));
+	strncpy(pt.tmac, sender_mac, strlen(sender_mac));
 	pt.handle = handle;
 // ########################################
 
