@@ -14,12 +14,15 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <ctype.h>
+#include <vector>
+#include <pthread.h>
 
 #include "mod_UDP.h"
 #include "mod_TCP.h"
 #include "mod_IP.h"
 #include "mod_Eth.h"
 #include "mod_ARP.h"
+#include "Processing.h"
 
 #include <netdb.h>
 #include <net/if.h>
@@ -34,5 +37,9 @@
 #include "libnet-macros.h"
 #include "libnet-structures.h"
 #include "libnet-types.h"
+
+#define MAX_PAC_SIZE 100
+#define REQ_CNT 20
+#define PTHREAD_NUM 3
 
 #endif
