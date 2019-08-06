@@ -61,14 +61,13 @@ void* Attack(void* info){
 
 	bzero(attack_packet->padding, 18);
 
-	for(int i = 0; i < 20; i++){
+	for(int i = 0; i < 2; i++){
 		printf("\n----------_ARP_----------\n");
 		//Print_ARP(&attack_packet);
 		if(pcap_sendpacket(PP->handle, reinterpret_cast<u_char*>(attack_packet), 100) != 0){
 			perror("send packet error");
 			exit(1);
 		}
-		sleep(1);
 	}
 }
 

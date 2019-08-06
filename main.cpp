@@ -86,8 +86,11 @@ int main(int argc, char* argv[]) {
 // ########################################
 
 // ########## Attack ##########
-	pthread_create(&thread[3], NULL, Attack, (void*)&pt);
-	pthread_join(thread[3], NULL);
+	while(1){ // 2 attack per 4 seconds
+		pthread_create(&thread[3], NULL, Attack, (void*)&pt);
+		pthread_join(thread[3], NULL);		
+		sleep(4);
+	}
 	//for(int i = 0; i < 20; i++) { Attack((void*)&pt); sleep(1); }
 // ########################################
 
