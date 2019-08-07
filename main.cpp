@@ -2,9 +2,21 @@
 using namespace std;
 
 pthread_t thread[PTHREAD_NUM];
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 int num_of_parameter = 0;
 pid_t pid[SESSION_NUM];
 pcap_t* handle;
+
+int isEnable_attack = 0;
+bool IEA = true;
+
+void Control(){
+	pthread_cond_wait(&cond, &mutex);
+	sleep(5);
+	IEA = true;
+	isEnable_attack = 0;
+}
 
 void terminate_Process(int sig){
 	for(int i = 0; i < num_of_parameter; i++){
@@ -14,7 +26,7 @@ void terminate_Process(int sig){
 	pcap_close(handle);
 }
 
-char* make_Parameter_REQ(char* at_ip_addr, char* at_mac_addr, char* ip, pcap_t* handles){
+char* make_Parameter_REQ(int num, char* at_ip_addr, char* at_mac_addr, char* ip, pcap_t* handles){
 	struct Parameter_Pthread pt2;
 	char* temp_mac = (char*)malloc(sizeof(char) * 40);
 	if(temp_mac == NULL){ perror("mac malloc error"); exit(1); }
@@ -34,8 +46,9 @@ char* make_Parameter_REQ(char* at_ip_addr, char* at_mac_addr, char* ip, pcap_t* 
 	strncpy(pt2.tip, ip, strlen(ip));
 	strncpy(pt2.tmac, temp_mac, strlen(temp_mac));
 	pt2.handle = handles;
-	pthread_create(&thread[1], NULL, find_Mac, (void*)&pt2);
-	pthread_join(thread[1], (void**)(&temp_mac));
+	pt2.session_Number = num;
+	pthread_create(&thread[num], NULL, find_Mac, (void*)&pt2);
+	pthread_join(thread[num], (void**)(&temp_mac));
 	return temp_mac;
 }
 
@@ -91,28 +104,43 @@ int main(int argc, char* argv[]) {
 		exit(0);
 	}
 
+	char* smac = (char*)malloc(sizeof(char) * 40);
+	if(smac == NULL){ perror("mac malloc error"); exit(1); }
+	char* dmac = (char*)malloc(sizeof(char) * 40);
+	if(dmac == NULL){ perror("mac malloc error"); exit(1); }	
+
 	Session s[SESSION_NUM];
 	int cnt = 2;
 	printf("[ NUM_OF_PRARMETER : %d ]\n", num_of_parameter);
 	for(int i = 0; i < num_of_parameter; i++){
-		pid[i] = fork();
-		if(pid[i] != 0){
-			// Find mac using pcap_sendpacket
-			char* smac = (char*)malloc(sizeof(char) * 40);
-			if(smac == NULL){ perror("mac malloc error"); exit(1); }
-			smac = make_Parameter_REQ(s_ip_addr, a_mac_addr, argv[cnt], handle);
-			printf("[ Success to find < %s > mac address : %s ]\n", argv[cnt], smac);
-			char* dmac = (char*)malloc(sizeof(char) * 40);
-			if(dmac == NULL){ perror("mac malloc error"); exit(1); }
-			dmac = make_Parameter_REQ(s_ip_addr, a_mac_addr, argv[cnt+1], handle);
-			printf("[ Success to find < %s > mac address : %s ]\n", argv[cnt+1], dmac);
+		// Find mac using pcap_sendpacket
+		char* t_smac = (char*)malloc(sizeof(char) * 40);
+		if(t_smac == NULL){ perror("t_mac malloc error"); exit(1); }
+		t_smac = make_Parameter_REQ(i+1, s_ip_addr, a_mac_addr, argv[cnt], handle);
+		smac = t_smac;
+		printf("[ < %d > Success to find < %s > mac address : %s ]\n", i+1, argv[cnt], smac);
+		char* t_dmac = (char*)malloc(sizeof(char) * 40);
+		if(t_dmac == NULL){ perror("t_mac malloc error"); exit(1); }
+		t_dmac = make_Parameter_REQ(i+1, s_ip_addr, a_mac_addr, argv[cnt+1], handle);
+		dmac = t_dmac;
+		printf("[ < %d > Success to find < %s > mac address : %s ]\n", i+1, argv[cnt+1], dmac);
 
-			// ########## Make contents of Attack parameters ##########
+		s[i].set(i+1, smac, argv[cnt], dmac, argv[cnt+1], handle, a_mac_addr);
+		cnt += 2;
+	}
+	
+	while(1){
+		for(int i = 0; i < num_of_parameter; i++)
+			s[i].handle_session();
+		cnt = 2;
+		for(int i = 0; i < num_of_parameter; i++){
+		// ########## Make contents of Attack parameters ##########
+			//if(IEA == false) break;
 			struct Parameter_Pthread pt;
 			pt.sip = (char*)malloc(strlen(argv[cnt]));
 			if(pt.sip == NULL){ perror("pt.sip malloc error"); exit(1); }
 			pt.smac = (char*)malloc(strlen(a_mac_addr));
-			if(pt.smac == NULL){ perror("pt.smac malloc error"); exit(1); }
+			if(pt.smac == NULL){ perror("pt.smac malloc error"); exit(1); }	
 
 			pt.tip = (char*)malloc(strlen(argv[cnt+1]));
 			if(pt.tip == NULL){ perror("pt.tip malloc error"); exit(1); }
@@ -126,13 +154,17 @@ int main(int argc, char* argv[]) {
 			pt.handle = handle;
 			pt.session_Number = i+1;
 			// ########################################
-
+	
 			// ########## Attack ##########
-			pthread_create(&thread[3+i], NULL, Attack, (void*)&pt);
+			//pthread_create(&thread[3+i], NULL, Attack, (void*)&pt);
+			Attack((void*)&pt);
+			//isEnable_attack++;
+			//printf("isE : %d\n", isEnable_attack);
+			//if(isEnable_attack > 16){
+			//	pthread_cond_signal(&cond);
+			//	IEA = false;
+			//}
 			// ########################################
-
-			s[i].set(i+1, smac, argv[cnt], dmac, argv[cnt+1], handle, a_mac_addr);
-			s[i].handle_session();
 			cnt += 2;
 		}
 	}

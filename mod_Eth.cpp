@@ -52,10 +52,16 @@ uint8_t Ethernet_header::Print_Eth(const u_char* Packet_DATA){
 	u_short ethernet_type;
 	ethernet_type = ntohs(EH->ether_type);
 
-	if(ethernet_type != 0x0800){
-		printf("Ethernet type is not IP\n");
-		return 0;
+	if(ethernet_type == 0x0800){
+		printf("Ethernet type is IP\n");
 	} // IP CHECK
+	else if(ethernet_type == 0x0806){
+		printf("Ethernet type is ARP\n");
+	}
+	else{
+		printf("Ethernet type is Unknown\n");
+		return 0;
+	}
 
 	printf("[Source] <MAC> Address : %02x:%02x:%02x:%02x:%02x:%02x:\n",
 		EH->ether_shost[0],
