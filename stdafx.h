@@ -16,6 +16,7 @@
 #include <ctype.h>
 #include <vector>
 #include <pthread.h>
+#include <signal.h>
 
 #include "mod_UDP.h"
 #include "mod_TCP.h"
@@ -23,12 +24,14 @@
 #include "mod_Eth.h"
 #include "mod_ARP.h"
 #include "Processing.h"
+#include "Session.h"
 
 #include <netdb.h>
 #include <net/if.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <linux/if_ether.h>
 
 #include <libnet.h>
@@ -40,6 +43,7 @@
 
 #define MAX_PAC_SIZE 100
 #define REQ_CNT 20
-#define PTHREAD_NUM 3
+#define PTHREAD_NUM 50
+#define SESSION_NUM 20
 
 #endif

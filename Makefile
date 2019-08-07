@@ -1,7 +1,7 @@
 all: ARP_S
 
-ARP_S: ARP_S.o mod_Eth.o mod_IP.o mod_TCP.o mod_UDP.o mod_ARP.o Processing.o
-	gcc -o ARP_S ARP_S.o mod_Eth.o mod_IP.o mod_TCP.o mod_UDP.o mod_ARP.o Processing.o -lpcap -lpthread
+ARP_S: ARP_S.o mod_Eth.o mod_IP.o mod_TCP.o mod_UDP.o mod_ARP.o Processing.o Session.o
+	gcc -o ARP_S ARP_S.o mod_Eth.o mod_IP.o mod_TCP.o mod_UDP.o mod_ARP.o Processing.o Session.o -lpcap -lpthread
 
 ARP_S.o: main.cpp
 	gcc -c -o ARP_S.o main.cpp
@@ -23,6 +23,9 @@ mod_ARP.o: mod_ARP.cpp
 
 Processing.o: Processing.cpp
 	gcc -c -o Processing.o Processing.cpp
+
+Session.o : Session.cpp
+	gcc -c -o Session.o Session.cpp
 
 clean:
 	rm -f *.o

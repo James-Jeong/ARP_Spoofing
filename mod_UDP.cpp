@@ -24,8 +24,8 @@ int UDP_header::Print_UDP(const u_char* Packet_DATA){
     printf("[Source] <Port> Number : %d\n", ntohs(UH->uh_sport));
     printf("[Destination] <Port> Number : %d\n", ntohs(UH->uh_dport));
 
-    printf("UDP Length : %x\n", UH->uh_ulen);
-    printf("UDP checksum : %x\n", UH->uh_sum);
+    printf("UDP Length : %d\n", UH->uh_ulen);
+    printf("UDP checksum : %d\n", UH->uh_sum);
 
     return (UH->uh_ulen);
 }
