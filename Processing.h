@@ -4,10 +4,11 @@
 #define PROCESSING_H
 
 struct Parameter_Pthread{
-	char* sip;
-	char* smac;
-	char* tip;
-	char* tmac;
+	int 	session_Number;
+	char* 	sip;
+	char* 	smac;
+	char* 	tip;
+	char* 	tmac;
 	pcap_t* handle;
 };
 

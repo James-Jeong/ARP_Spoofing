@@ -7,9 +7,9 @@ pid_t pid[SESSION_NUM];
 pcap_t* handle;
 
 void terminate_Process(int sig){
-	pthread_join(thread[3], NULL);
 	for(int i = 0; i < num_of_parameter; i++){
 		kill(pid[i], SIGKILL);
+		pthread_join(thread[3+i], NULL);
 	}
 	pcap_close(handle);
 }
@@ -93,6 +93,7 @@ int main(int argc, char* argv[]) {
 
 	Session s[SESSION_NUM];
 	int cnt = 2;
+	printf("[ NUM_OF_PRARMETER : %d ]\n", num_of_parameter);
 	for(int i = 0; i < num_of_parameter; i++){
 		pid[i] = fork();
 		if(pid[i] != 0){
@@ -123,10 +124,11 @@ int main(int argc, char* argv[]) {
 			strncpy(pt.tip, argv[cnt], strlen(argv[cnt]));
 			strncpy(pt.tmac, smac, strlen(smac));
 			pt.handle = handle;
+			pt.session_Number = i+1;
 			// ########################################
 
 			// ########## Attack ##########
-			pthread_create(&thread[3], NULL, Attack, (void*)&pt);
+			pthread_create(&thread[3+i], NULL, Attack, (void*)&pt);
 			// ########################################
 
 			s[i].set(i+1, smac, argv[cnt], dmac, argv[cnt+1], handle, a_mac_addr);

@@ -64,9 +64,9 @@ void* Attack(void* info){
 	// 2 attack per 2.5 seconds
 	while(1){
 		for(int i = 0; i < 2; i++){
-			printf("\n----------_ARP_----------\n");
+			printf("\n----------_ARP %d_----------\n", PP->session_Number);
 			//Print_ARP(&attack_packet);
-			if(pcap_sendpacket(PP->handle, reinterpret_cast<u_char*>(attack_packet), 43) != 0){
+			if(pcap_sendpacket(PP->handle, reinterpret_cast<u_char*>(attack_packet), 42) != 0){
 				perror("send packet error");
 				exit(1);
 			}
@@ -162,6 +162,7 @@ void* find_Mac(void* info){
 		struct pcap_pkthdr* header;
 		const u_char* packet;
 		int res = pcap_next_ex(PP->handle, &header, &packet);
+		
 		temp = (struct ARP_header*)(packet);
 		//check_ARP(packet);
 
@@ -187,10 +188,10 @@ temp->sender_ip_addr[1], temp->sender_ip_addr[2], temp->sender_ip_addr[3]);
 		if(b == NULL){ perror("b malloc error"); exit(1); }
 		sprintf(b, "%d.%d.%d.%d", ah->target_ip_addr[0], 
 ah->target_ip_addr[1], ah->target_ip_addr[2], ah->target_ip_addr[3]);
-		printf("temp->sender_mac_addr : %s\n", a);
+		printf("temp->sender_ip_addr : %s\n", a);
 		printf("ah->target_ip_addr : %s\n", b);
 
-		if((temp->frame_type == htons(ARP_FRAME_TYPE)) && (temp->op == htons(OP_ARP_REPLY)) && (memcmp(temp->sender_ip_addr, ah->target_ip_addr, sizeof(temp->sender_ip_addr)) == 0)){
+		if((temp->frame_type == htons(ARP_FRAME_TYPE)) && (memcmp(temp->sender_ip_addr, ah->target_ip_addr, sizeof(temp->sender_ip_addr)) == 0)){
 			printf("[ Success to access %d ]\n", count);
 			break;
 		}

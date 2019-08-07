@@ -18,7 +18,7 @@ char* IP_header::Print_IP(const u_char* Packet_DATA){
     printf("Identification : %x\n", IH->ip_id);
     printf("TTL : %d\n", IH->ip_ttl);
     printf("protocol : %x\n", IH->ip_p);
-    printf("Checksum : %d\n", IH->ip_sum);
+    printf("Checksum : %x\n", IH->ip_sum);
 
     sprintf(WIP, "%x", IH->ip_p);
     //printf("WIP : %s\n", WIP);
