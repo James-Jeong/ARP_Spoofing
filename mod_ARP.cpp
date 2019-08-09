@@ -85,33 +85,37 @@ void tomar_ip_addr(struct in_addr* in_addr, char* str){
 
 void tomar_mac_addr(u_char* buf, char* str){
 	u_char c, val;
+	char* error_msg = (char*)malloc(sizeof(15));
+	if(error_msg == NULL){ perror("error_msg malloc error"); exit(1); }
+	strncpy(error_msg, "Wrong mac addr", 15);
 
 	for(int i = 0; i < ETH_MAC_ADDR_LEN; i++){
 		//printf("%s\n", str);
 		if(!(c = tolower(*str++))){
 			//printf("%s\n", str);
-			EndOfProgram("Wrong mac addr");
+			EndOfProgram(error_msg);
 		}
 		if(isdigit(c)) val = c - '0';
 		else if(c >= 'a' && c <= 'f') val = c - 'a' + 10;
-		else EndOfProgram("Wrong mac addr");
+		else EndOfProgram(error_msg);
 
 		*buf = val << 4;
 		if(!(c = tolower(*str++))){
 			//printf("%s\n", str);
-			EndOfProgram("Wrong mac addr");
+			EndOfProgram(error_msg);
 		}
 		if(isdigit(c)) val = c - '0';
 		else if(c >= 'a' && c <= 'f') val = c - 'a' + 10;
 		else{
 			//printf("%s\n", str);
-			EndOfProgram("Wrong mac addr");
+			EndOfProgram(error_msg);
 		}
 
 		*buf++ |= val;
 
 		if(*str == ':') str++;
 	}
+	free(error_msg);
 }
 
 void check_ARP(const u_char* Packet_DATA){
