@@ -44,16 +44,21 @@ int Ethernet_header::Check_Eth(const u_char* Packet_DATA, char* sender_mac, char
 
 	// Is sender mac address equal to EH's mac address?
 	if(strncmp(sender_mac, EH_smac, strlen(sender_mac)) == 0){
+		printf("sender_mac == EH_smac\n");
 		sum += 1;
 	}
 	if(strncmp(my_mac, EH_dmac, strlen(my_mac)) == 0){
+		printf("attac_mac == EH_dmac\n");
 		sum += 1;
 	}
-	else if(strncmp(EH_dmac, "ffffffffffff", strlen(EH_dmac))){
-		sum += 2;
+	else if(strncmp(EH_dmac, "ffffffffffff", strlen(EH_dmac)) == 0){
+		printf("EHDMAC : %s\n", EH_dmac);
+		printf("ffffffffffff == EH_dmac\n");
+		sum += 10;
 	}
-	else if(strncmp(EH_dmac, target_mac, strlen(EH_dmac))){
-		sum += 3;
+	else if(strncmp(EH_dmac, target_mac, strlen(EH_dmac)) == 0){
+		printf("target_mac == EH_dmac\n");
+		sum += 100;
 	}
 	return sum;
 }
