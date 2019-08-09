@@ -41,6 +41,8 @@
 #include "libnet-structures.h"
 #include "libnet-types.h"
 
+#define PROMISCUOUS_MODE 1
+#define NON_PROMISCUOUS_MODE 0
 #define MAX_PAC_SIZE 100
 #define REQ_CNT 20
 #define PTHREAD_NUM 50
