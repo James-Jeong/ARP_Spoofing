@@ -21,7 +21,7 @@ char* IP_header::Print_IP(const u_char* Packet_DATA){
     printf("Checksum : %x\n", IH->ip_sum);
 
     sprintf(WIP, "%x", IH->ip_p);
-    //printf("WIP : %s\n", WIP);
+    printf("WIP : %s\n", WIP);
 
     printf("[Source] <IP> Address : %s\n", inet_ntoa(IH->ip_src));
     printf("[Destination] <IP> Address : %s\n", inet_ntoa(IH->ip_dst));

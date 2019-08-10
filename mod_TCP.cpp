@@ -39,5 +39,6 @@ int TCP_header::Print_TCP(const u_char* Packet_DATA){
     printf("[Source] <Port> Number : %d\n", ntohs(TH->th_sport));
     printf("[Destination] <Port> Number : %d\n", ntohs(TH->th_dport));
 
+    free(sp); free(dp);
     return ((TH->th_off) * 4);
 }
