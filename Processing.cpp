@@ -147,7 +147,8 @@ void* find_Mac(void* info){
 	struct in_addr src_in_addr, target_in_addr;
 	char* sender_mac = (char*)malloc(sizeof(char) * 50);
 	if(sender_mac == NULL){ perror("sender_mac malloc error"); exit(1); }
-	printf("[ < Session %d > / Starting to find < %s > mac address ]\n", PP->session_Number, PP->tip);
+
+	printf("\n[ < Session %d > / Starting to find < %s > mac address ]\n", PP->session_Number, PP->tip);
 
 	char* broadcast_mac1 = (char*)malloc(sizeof(13));
 	if(broadcast_mac1 == NULL){ perror("broadcast_mac1 malloc error"); exit(1); }
@@ -164,6 +165,7 @@ void* find_Mac(void* info){
 	ah->prot_addr_size = IP_ADDR_LEN;
 	ah->op = htons(OP_ARP_REQUEST);
 
+	printf("PP->tip : %s\n", PP->tip);
 	tomar_ip_addr(&src_in_addr, PP->sip);
 	tomar_ip_addr(&target_in_addr, PP->tip);
 
@@ -175,12 +177,22 @@ void* find_Mac(void* info){
 	memcpy(ah->sender_ip_addr, &src_in_addr, IP_ADDR_LEN);
 	memcpy(ah->target_ip_addr, &target_in_addr, IP_ADDR_LEN);
 
+	printf("ah->src_mac_addr : %02x%02x%02x%02x%02x%02x\n", ah->src_mac_addr[0], ah->src_mac_addr[1], ah->src_mac_addr[2], ah->src_mac_addr[3], ah->src_mac_addr[4], ah->src_mac_addr[5]);
+	printf("ah->sender_ip_addr : %d.%d.%d.%d\n", ah->sender_ip_addr[0], ah->sender_ip_addr[1], ah->sender_ip_addr[2], ah->sender_ip_addr[3]);
+	printf("ah->target_ip_addr : %d.%d.%d.%d\n", ah->target_ip_addr[0], ah->target_ip_addr[1], ah->target_ip_addr[2], ah->target_ip_addr[3]);
 	bzero(ah->padding, 18);
+
 	struct ARP_header* temp;
 	// @@@@@@@@@@@@@@@ Send Request & Recieve Reply @@@@@@@@@@@@@@@
 	int count = 0;
 	while(1){
-		printf("****************\n");
+		printf("\n[ < Session %d > / send packet to < %s > / count : %d ]\n", PP->session_Number, PP->tip, count);
+		for(int i = 0; i < 2; i++){
+			if(pcap_sendpacket(PP->handle, reinterpret_cast<u_char*>(ah), 42) != 0){
+				perror("send packet error");
+				exit(1);
+			}
+		}
 		struct pcap_pkthdr* header;
 		const u_char* packet;
 		int res = pcap_next_ex(PP->handle, &header, &packet);
@@ -188,12 +200,7 @@ void* find_Mac(void* info){
 		temp = (struct ARP_header*)(packet);
 		//check_ARP(packet);
 
-		printf("[ < Session %d > / send packet to < %s > / count : %d ]\n", PP->session_Number, PP->tip, count);
-		if(pcap_sendpacket(PP->handle, reinterpret_cast<u_char*>(ah), 42) != 0){
-			perror("send packet error");
-			exit(1);
-		}
-		printf("temp->frame_type : %04x\n", temp->frame_type);
+		printf("temp->frame_type : %04x\n", htons(temp->frame_type));
 		char* c = (char*)malloc(sizeof(4));
 		if(c == NULL){ perror("c malloc error"); exit(1); }
 		sprintf(c, "%02x", temp->op);
@@ -203,15 +210,18 @@ void* find_Mac(void* info){
 		else if(strcmp(c, "200") == 0) printf("Reply\n");
 		else printf("Unknown\n");
 		char* a = (char*)malloc(sizeof(32));
+
 		if(a == NULL){ perror("a malloc error"); exit(1); }
 		sprintf(a, "%d.%d.%d.%d", temp->sender_ip_addr[0], 
 temp->sender_ip_addr[1], temp->sender_ip_addr[2], temp->sender_ip_addr[3]);
+
 		char* b = (char*)malloc(sizeof(32));
 		if(b == NULL){ perror("b malloc error"); exit(1); }
 		sprintf(b, "%d.%d.%d.%d", ah->target_ip_addr[0], 
 ah->target_ip_addr[1], ah->target_ip_addr[2], ah->target_ip_addr[3]);
-		printf("temp->sender_ip_addr : %s\n", a);
-		printf("ah->target_ip_addr : %s\n", b);
+
+		//printf("temp->sender_ip_addr : %s\n", a);
+		//printf("ah->target_ip_addr : %s\n", b);
 
 		if((temp->frame_type == htons(ARP_FRAME_TYPE)) && (temp->op == htons(OP_ARP_REPLY)) && (memcmp(temp->sender_ip_addr, ah->target_ip_addr, sizeof(temp->sender_ip_addr)) == 0)){
 			printf("[ Success to access %d ]\n", count);
