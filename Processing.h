@@ -4,17 +4,17 @@
 #define PROCESSING_H
 
 struct Parameter_Pthread{
-	int 	session_Number;
-	char* 	sip;
-	char* 	smac;
-	char* 	tip;
-	char* 	tmac;
-	pcap_t* handle;
+    int 	session_Number;
+    char* 	sip;
+    char* 	smac;
+    char* 	tip;
+    char* 	tmac;
+    pcap_t* handle;
 };
 
 struct Info_mymac{
-	char* my_mac;
-	char* my_ip;
+    char* my_mac;
+    char* my_ip;
 };
 
 char* delChar(char* buf, char ch);
