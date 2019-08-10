@@ -6,7 +6,7 @@
 - attack sender's network
 
 # Command
-- sudo ./ARP_S (sender's ip address) (target's ip address) (target's ip address) (sender's ip address) ...
+- sudo ./ARP_S (device name) (sender's ip address) (target's ip address) (target's ip address) (sender's ip address) ...
 
 # Reference
 1. http://egloos.zum.com/hkpco/v/576721
