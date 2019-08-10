@@ -162,7 +162,7 @@ typedef struct libnet_protocol_block libnet_pblock_t;
  */
 struct libnet_context
 {
-#if ((__WIN32__) && !(__CYGWIN__)) 
+#if ((__WIN32__) && !(__CYGWIN__))
     SOCKET fd;
     LPADAPTER  lpAdapter;
 #else

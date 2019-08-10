@@ -75,7 +75,7 @@
 
 /**
  * Used for libnet_get_prand() to specify function disposition
- */ 
+ */
 #define LIBNET_PR2          0
 #define LIBNET_PR8          1
 #define LIBNET_PR16         2
@@ -113,7 +113,7 @@
 
 /**
  * The libnet error buffer is 256 bytes long.
- */ 
+ */
 #define LIBNET_ERRBUF_SIZE      0x100
 
 /**
@@ -138,7 +138,7 @@
 #define LIBNET_OSPF_AUTHCPY(x, y) \
     memcpy((u_int8_t *)x, (u_int8_t *)y, sizeof(y))
 #define LIBNET_OSPF_CKSUMBUF(x, y) \
-    memcpy((u_int8_t *)x, (u_int8_t *)y, sizeof(y))  
+    memcpy((u_int8_t *)x, (u_int8_t *)y, sizeof(y))
 
 /* used internally for NTP leap indicator, version, and mode */
 #define LIBNET_NTP_DO_LI_VN_MODE(li, vn, md) \

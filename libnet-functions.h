@@ -37,7 +37,7 @@
  */
 
 /**
- * Creates the libnet environment. It initializes the library and returns a 
+ * Creates the libnet environment. It initializes the library and returns a
  * libnet context. If the injection_type is LIBNET_LINK or LIBNET_LINK_ADV, the
  * function initializes the injection primitives for the link-layer interface
  * enabling the application programmer to build packets starting at the
@@ -64,8 +64,8 @@ libnet_t *
 libnet_init(int injection_type, char *device, char *err_buf);
 
 /**
- * Shuts down the libnet session referenced by l. It closes the network 
- * interface and frees all internal memory structures associated with l.  
+ * Shuts down the libnet session referenced by l. It closes the network
+ * interface and frees all internal memory structures associated with l.
  * @param l pointer to a libnet context
  */
 void
@@ -94,13 +94,13 @@ libnet_stats(libnet_t *l, struct libnet_stats *ls);
  * @param l pointer to a libnet context
  * @return the file number of the file descriptor used for packet injection
  */
-int 
+int
 libnet_getfd(libnet_t *l);
 
 /**
  * Returns the canonical name of the device used for packet injection.
  * @param l pointer to a libnet context
- * @return the canonical name of the device used for packet injection. Note 
+ * @return the canonical name of the device used for packet injection. Note
  * it can be NULL without being an error.
  */
 int8_t *
@@ -124,7 +124,7 @@ libnet_getpbuf(libnet_t *l, libnet_ptag_t ptag);
  * @param l pointer to a libnet context
  * @param ptag the ptag reference number
  * @return the size of the pblock buffer
- */ 
+ */
 u_int32_t
 libnet_getpbuf_size(libnet_t *l, libnet_ptag_t ptag);
 
@@ -134,7 +134,7 @@ libnet_getpbuf_size(libnet_t *l, libnet_ptag_t ptag);
  * is detected inside of libnet.
  * @param l pointer to a libnet context
  * @return an error string or NULL if no error has occured
- */ 
+ */
 char *
 libnet_geterror(libnet_t *l);
 
@@ -143,7 +143,7 @@ libnet_geterror(libnet_t *l);
  * be the resuling packet size).
  * @param l pointer to a libnet context
  * @return the size of the packet in l
- */ 
+ */
 u_int32_t
 libnet_getpacket_size(libnet_t *l);
 
@@ -177,15 +177,15 @@ libnet_get_prand(int mod);
  * header is set to any other value, by default libnet will not calculate the
  * header checksum. To over-ride this behavior, use libnet_toggle_checksum().
  * Switches auto-checksumming on or off for the specified ptag. If mode is set
- * to LIBNET_ON, libnet will mark the specificed ptag to calculate a checksum 
- * for the ptag prior to injection. This assumes that the ptag refers to a 
+ * to LIBNET_ON, libnet will mark the specificed ptag to calculate a checksum
+ * for the ptag prior to injection. This assumes that the ptag refers to a
  * protocol that has a checksum field. If mode is set to LIBNET_OFF, libnet
- * will clear the checksum flag and no checksum will be computed prior to 
+ * will clear the checksum flag and no checksum will be computed prior to
  * injection. This assumes that the programmer will assign a value (zero or
  * otherwise) to the checksum field.  Often times this is useful if a
  * precomputed checksum or some other predefined value is going to be used.
  * Note that when libnet is initialized with LIBNET_RAW4, the IPv4 header
- * checksum will always be computed by the kernel prior to injection, 
+ * checksum will always be computed by the kernel prior to injection,
  * regardless of what the programmer sets.
  * @param l pointer to a libnet context
  * @param ptag the ptag reference number
@@ -196,7 +196,7 @@ int
 libnet_toggle_checksum(libnet_t *l, libnet_ptag_t ptag, int mode);
 
 /**
- * Takes a network byte ordered IPv4 address and returns a pointer to either a 
+ * Takes a network byte ordered IPv4 address and returns a pointer to either a
  * canonical DNS name (if it has one) or a string of dotted decimals. This may
  * incur a DNS lookup if the hostname and mode is set to LIBNET_RESOLVE. If
  * mode is set to LIBNET_DONT_RESOLVE, no DNS lookup will be performed and
@@ -211,7 +211,7 @@ char *
 libnet_addr2name4(u_int32_t in, u_int8_t use_name);
 
 /**
- * Takes a dotted decimal string or a canonical DNS name and returns a 
+ * Takes a dotted decimal string or a canonical DNS name and returns a
  * network byte ordered IPv4 address. This may incur a DNS lookup if mode is
  * set to LIBNET_RESOLVE and host_name refers to a canonical DNS name. If mode
  * is set to LIBNET_DONT_RESOLVE no DNS lookup will occur. The function can
@@ -221,7 +221,7 @@ libnet_addr2name4(u_int32_t in, u_int8_t use_name);
  * @param host_name pointer to a string containing a presentation format host
  * name
  * @param use_name LIBNET_RESOLVE or LIBNET_DONT_RESOLVE
- * @return network byte ordered IPv4 address or -1 (2^32 - 1) on error 
+ * @return network byte ordered IPv4 address or -1 (2^32 - 1) on error
  */
 u_int32_t
 libnet_name2addr4(libnet_t *l, char *host_name, u_int8_t use_name);
@@ -229,7 +229,7 @@ libnet_name2addr4(libnet_t *l, char *host_name, u_int8_t use_name);
 extern const struct libnet_in6_addr in6addr_error;
 
 /**
- * Takes a dotted decimal string or a canonical DNS name and returns a 
+ * Takes a dotted decimal string or a canonical DNS name and returns a
  * network byte ordered IPv6 address. This may incur a DNS lookup if mode is
  * set to LIBNET_RESOLVE and host_name refers to a canonical DNS name. If mode
  * is set to LIBNET_DONT_RESOLVE no DNS lookup will occur. The function can
@@ -239,7 +239,7 @@ extern const struct libnet_in6_addr in6addr_error;
  * @param host_name pointer to a string containing a presentation format host
  * name
  * @param use_name LIBNET_RESOLVE or LIBNET_DONT_RESOLVE
- * @return network byte ordered IPv6 address structure 
+ * @return network byte ordered IPv6 address structure
  */
 struct libnet_in6_addr
 libnet_name2addr6(libnet_t *l, char *host_name, u_int8_t use_name);
@@ -256,8 +256,8 @@ char *host_name, int host_name_len);
  * applications that need to send packets to a range of ports (contiguous or
  * otherwise). The port list chain, which token_list points to, should contain
  * a series of int8_tacters from the following list: "0123456789,-" of the
- * general format "x - y, z", where "xyz" are port numbers between 0 and 
- * 65,535. plist points to the front of the port list chain list for use in 
+ * general format "x - y, z", where "xyz" are port numbers between 0 and
+ * 65,535. plist points to the front of the port list chain list for use in
  * further libnet_plist_chain() functions. Upon success, the function returns
  * 1. Upon failure, the function returns -1 and libnet_geterror() can tell you
  * why.
@@ -271,9 +271,9 @@ libnet_plist_chain_new(libnet_t *l, libnet_plist_t **plist, char *token_list);
 
 /**
  * Returns the next port list chain pair from the port list chain plist. bport
- * and eport contain the starting port number and ending port number, 
+ * and eport contain the starting port number and ending port number,
  * respectively. Upon success, the function returns 1 and fills in the port
- * variables; however, if the list is empty, the function returns 0 and sets 
+ * variables; however, if the list is empty, the function returns 0 and sets
  * both port variables to 0. Upon failure, the function returns -1.
  * @param plist previously created portlist
  * @param bport will contain the beginning port number or 0
@@ -281,8 +281,8 @@ libnet_plist_chain_new(libnet_t *l, libnet_plist_t **plist, char *token_list);
  * @return 1 on success, 0 if empty, -1 on failure
  */
 int
-libnet_plist_chain_next_pair(libnet_plist_t *plist, u_int16_t *bport, 
-u_int16_t *eport); 
+libnet_plist_chain_next_pair(libnet_plist_t *plist, u_int16_t *bport,
+u_int16_t *eport);
 
 /**
  * Runs through the port list and prints the contents of the port list chain
@@ -315,65 +315,65 @@ libnet_plist_chain_free(libnet_plist_t *plist);
 /**
  * @section PBF Packet Builder Functions
  *
- * The core of libnet is the platform-independent packet-building 
- * functionality. These functions enable an application programmer to build 
+ * The core of libnet is the platform-independent packet-building
+ * functionality. These functions enable an application programmer to build
  * protocol headers (and data) in a simple and consistent manner without having
- * to worry (too much) about low-level network odds and ends. Each 
- * libnet_build() function builds a piece of a packet (generally a protocol 
- * header). While it is perfectly possible to build an entire, 
- * ready-to-transmit packet with a single call to a libnet_build() function, 
+ * to worry (too much) about low-level network odds and ends. Each
+ * libnet_build() function builds a piece of a packet (generally a protocol
+ * header). While it is perfectly possible to build an entire,
+ * ready-to-transmit packet with a single call to a libnet_build() function,
  * generally more than one builder-class function call is required to construct
- * a full packet. A complete wire-ready packet generally consists of more than 
+ * a full packet. A complete wire-ready packet generally consists of more than
  * one piece.
- * Every function that builds a protocol header takes a series of arguments 
- * roughly corresponding to the header values as they appear on the wire. This 
- * process is intuitive but often makes for functions with huge prototypes and 
+ * Every function that builds a protocol header takes a series of arguments
+ * roughly corresponding to the header values as they appear on the wire. This
+ * process is intuitive but often makes for functions with huge prototypes and
  * large stack frames.
- * One important thing to note is that you must call these functions in order, 
- * corresponding to how they should appear on the wire (from the highest 
+ * One important thing to note is that you must call these functions in order,
+ * corresponding to how they should appear on the wire (from the highest
  * protocol layer on down). This building process is intuitive; it approximates
- * what happens in an operating system kernel. In other words, to build a 
- * Network Time Protocol (NTP) packet by using the link-layer interface, the 
- * application programmer would call the libnet_build() functions in the 
+ * what happens in an operating system kernel. In other words, to build a
+ * Network Time Protocol (NTP) packet by using the link-layer interface, the
+ * application programmer would call the libnet_build() functions in the
  * following order:
  * 1. libnet_build_ntp()
  * 2. libnet_build_udp()
  * 3. libnet_build_ipv4()
  * 4. libnet_build_ethernet()
- * This ordering is essential for libnet 1.1.x to properly link together the 
+ * This ordering is essential for libnet 1.1.x to properly link together the
  * packet internally (previous libnet versions did not have the requirement).
  *
  * @subsection TPI The Payload Interface
  *
- * The payload interface specifies an optional way to include data directly 
- * after the protocol header in question. You can use this function for a 
+ * The payload interface specifies an optional way to include data directly
+ * after the protocol header in question. You can use this function for a
  * variety of purposes, including the following:
- * - Including additional or arbitrary protocol header information that is not 
+ * - Including additional or arbitrary protocol header information that is not
  *   available from a libnet interface
  * - Including a packet payload (data segment)
- * - Building another protocol header that is not available from a libnet 
+ * - Building another protocol header that is not available from a libnet
  *   interface
  * To employ the interface, the application programmer should construct the i
  * payload data and pass a u_int8_t * to this data and its size to the desired
  * libnet_build() function. Libnet handles the rest.
  *
  * It is important to note that some functions (notably the IPv6 builders) do
- * use the payload interface to specify variable length but ostensibly 
+ * use the payload interface to specify variable length but ostensibly
  * non-optional data. See the individual libnet_build_ipv6*() functions for
  * more information.
- * 
+ *
  * @subsection PT Protocol Tags and Packet Builder Return Values
  *
- * Libnet uses the protocol tag (ptag) to identify individual pieces of a 
- * packet after being created. A new ptag results every time a libnet_build() 
- * function with an empty (0) ptag argument completes successfully. This new 
- * ptag now refers to the packet piece just created. The application 
- * programmer's responsibility is to save this value if he or she plans to 
- * modify this particular portion later on in the program. If the application 
- * programmer needs to modify some portion of that particular packet piece 
- * again, he or she calls the same libnet_build() function specifying the 
+ * Libnet uses the protocol tag (ptag) to identify individual pieces of a
+ * packet after being created. A new ptag results every time a libnet_build()
+ * function with an empty (0) ptag argument completes successfully. This new
+ * ptag now refers to the packet piece just created. The application
+ * programmer's responsibility is to save this value if he or she plans to
+ * modify this particular portion later on in the program. If the application
+ * programmer needs to modify some portion of that particular packet piece
+ * again, he or she calls the same libnet_build() function specifying the
  * saved ptag argument. Libnet then searches for that packet piece and modifies
- * it rather than creating a new one. Upon failure for any reason, 
+ * it rather than creating a new one. Upon failure for any reason,
  * libnet_build() functions return -1; libnet_geterror() tells you why.
  */
 
@@ -392,7 +392,7 @@ libnet_plist_chain_free(libnet_plist_t *plist);
  * @param priority priority
  * @param cfi canonical format indicator
  * @param vlan_id vlan identifier
- * @param len_proto length (802.3) protocol (Ethernet II) 
+ * @param len_proto length (802.3) protocol (Ethernet II)
  * @param payload optional payload or NULL
  * @param payload_s payload length or 0
  * @param l pointer to a libnet context
@@ -416,7 +416,7 @@ u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
  * @return protocol tag value on success, -1 on error
  */
 libnet_ptag_t
-libnet_build_802_1x(u_int8_t eap_ver, u_int8_t eap_type, u_int16_t length, 
+libnet_build_802_1x(u_int8_t eap_ver, u_int8_t eap_type, u_int16_t length,
 u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
 
 /**
@@ -448,12 +448,12 @@ u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
  * @return protocol tag value on success, -1 on error
  */
 libnet_ptag_t
-libnet_build_802_2snap(u_int8_t dsap, u_int8_t ssap, u_int8_t control, 
+libnet_build_802_2snap(u_int8_t dsap, u_int8_t ssap, u_int8_t control,
 u_int8_t *oui, u_int16_t type, u_int8_t *payload, u_int32_t payload_s,
-libnet_t *l, libnet_ptag_t ptag); 
+libnet_t *l, libnet_ptag_t ptag);
 
 /**
- * Builds an IEEE 802.3 header. The 802.3 header is almost identical to the 
+ * Builds an IEEE 802.3 header. The 802.3 header is almost identical to the
  * RFC 894 Ethernet II header, the exception being that the field immediately
  * following the source address holds the frame's length (as opposed to the
  * layer 3 protocol). You should only use this function when libnet is
@@ -468,15 +468,15 @@ libnet_t *l, libnet_ptag_t ptag);
  * @return protocol tag value on success, -1 on error
  */
 libnet_ptag_t
-libnet_build_802_3(u_int8_t *dst, u_int8_t *src, u_int16_t len, 
+libnet_build_802_3(u_int8_t *dst, u_int8_t *src, u_int16_t len,
 u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
 
 /**
- * Builds an Ethernet header. The RFC 894 Ethernet II header is almost 
- * identical to the IEEE 802.3 header, with the exception that the field 
+ * Builds an Ethernet header. The RFC 894 Ethernet II header is almost
+ * identical to the IEEE 802.3 header, with the exception that the field
  * immediately following the source address holds the layer 3 protocol (as
- * opposed to frame's length). You should only use this function when 
- * libnet is initialized with the LIBNET_LINK interface. 
+ * opposed to frame's length). You should only use this function when
+ * libnet is initialized with the LIBNET_LINK interface.
  * @param dst destination ethernet address
  * @param src source ethernet address
  * @param type upper layer protocol type
@@ -487,15 +487,15 @@ u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
  * @return protocol tag value on success, -1 on error
  */
 libnet_ptag_t
-libnet_build_ethernet(u_int8_t *dst, u_int8_t *src, u_int16_t type, 
+libnet_build_ethernet(u_int8_t *dst, u_int8_t *src, u_int16_t type,
 u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
 
 /**
- * Autobuilds an Ethernet header. The RFC 894 Ethernet II header is almost 
- * identical to the IEEE 802.3 header, with the exception that the field 
+ * Autobuilds an Ethernet header. The RFC 894 Ethernet II header is almost
+ * identical to the IEEE 802.3 header, with the exception that the field
  * immediately following the source address holds the layer 3 protocol (as
- * opposed to frame's length). You should only use this function when 
- * libnet is initialized with the LIBNET_LINK interface. 
+ * opposed to frame's length). You should only use this function when
+ * libnet is initialized with the LIBNET_LINK interface.
  * @param dst destination ethernet address
  * @param type upper layer protocol type
  * @param l pointer to a libnet context
@@ -513,7 +513,7 @@ libnet_autobuild_ethernet(u_int8_t *dst, u_int16_t type, libnet_t *l);
  * @param ssap source service access point
  * @param cf cf
  * @param oui 3 byte IEEE organizational code
- * @param type upper layer protocol 
+ * @param type upper layer protocol
  * @param payload optional payload or NULL
  * @param payload_s payload length or 0
  * @param l pointer to a libnet context
@@ -533,7 +533,7 @@ u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
  * @param ssap source service access point
  * @param cf cf
  * @param oui IEEE organizational code
- * @param type upper layer protocol 
+ * @param type upper layer protocol
  * @param l pointer to a libnet context
  * @return protocol tag value on success, -1 on error
  */
@@ -542,7 +542,7 @@ libnet_autobuild_fddi(u_int8_t fc, u_int8_t *dst, u_int8_t dsap, u_int8_t ssap,
 u_int8_t cf, u_int8_t *oui, u_int16_t type, libnet_t *l);
 
 /**
- * Builds an Address Resolution Protocol (ARP) header.  Depending on the op 
+ * Builds an Address Resolution Protocol (ARP) header.  Depending on the op
  * value, the function builds one of several different types of RFC 826 or
  * RFC 903 RARP packets.
  * @param hrd hardware address format
@@ -566,7 +566,7 @@ u_int16_t op, u_int8_t *sha, u_int8_t *spa, u_int8_t *tha, u_int8_t *tpa,
 u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
 
 /**
- * Autouilds an Address Resolution Protocol (ARP) header.  Depending on the op 
+ * Autouilds an Address Resolution Protocol (ARP) header.  Depending on the op
  * value, the function builds one of several different types of RFC 826 or
  * RFC 903 RARP packets.
  * @param op ARP operation type
@@ -599,14 +599,14 @@ u_int8_t *tpa, libnet_t *l);
  */
 libnet_ptag_t
 libnet_build_tcp(u_int16_t sp, u_int16_t dp, u_int32_t seq, u_int32_t ack,
-u_int8_t control, u_int16_t win, u_int16_t sum, u_int16_t urg, u_int16_t len, 
+u_int8_t control, u_int16_t win, u_int16_t sum, u_int16_t urg, u_int16_t len,
 u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
 
 /**
  * Builds an RFC 793 Transmission Control Protocol (TCP) options header.
- * The function expects options to be a valid TCP options string of size 
- * options_s, which is no larger than 40 bytes (the maximum size of an 
- * options string). The function checks to ensure that the packet consists of 
+ * The function expects options to be a valid TCP options string of size
+ * options_s, which is no larger than 40 bytes (the maximum size of an
+ * options string). The function checks to ensure that the packet consists of
  * a TCP header preceded by an IPv4 header, and that the addition of the
  * options string would not result in a packet larger than 65,535 bytes
  * (IPMAXPACKET). The function counts up the number of 32-bit words in the
@@ -642,7 +642,7 @@ u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
  * to aid in the network management of adjacent Cisco devices. The CDP protocol
  * specifies data by using a type/length/value (TLV) setup. The first TLV can
  * specified by using the functions type, length, and value arguments. To
- * specify additional TLVs, the programmer could either use the payload 
+ * specify additional TLVs, the programmer could either use the payload
  * interface or libnet_build_data() to construct them.
  * @param version CDP version
  * @param ttl time to live (time information should be cached by recipient)
@@ -702,7 +702,7 @@ u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
 
 /**
  * Builds an IP version 4 RFC 792 Internet Control Message Protocol (ICMP)
- * unreachable header. The IP header that caused the error message should be 
+ * unreachable header. The IP header that caused the error message should be
  * built by a previous call to libnet_build_ipv4().
  * @param type type of ICMP packet (should be ICMP_UNREACH)
  * @param code code of ICMP packet (should be one of the 16 unreachable codes)
@@ -718,8 +718,8 @@ libnet_build_icmpv4_unreach(u_int8_t type, u_int8_t code, u_int16_t sum,
 u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
 
 /**
- * Builds an IP version 4 RFC 792 Internet Message Control Protocol (ICMP) 
- * redirect header.  The IP header that caused the error message should be 
+ * Builds an IP version 4 RFC 792 Internet Message Control Protocol (ICMP)
+ * redirect header.  The IP header that caused the error message should be
  * built by a previous call to libnet_build_ipv4().
  * @param type type of ICMP packet (should be ICMP_REDIRECT)
  * @param code code of ICMP packet (should be one of the four redirect codes)
@@ -737,7 +737,7 @@ libnet_ptag_t ptag);
 
 /**
  * Builds an IP version 4 RFC 792 Internet Control Message Protocol (ICMP) time
- * exceeded header.  The IP header that caused the error message should be 
+ * exceeded header.  The IP header that caused the error message should be
  * built by a previous call to libnet_build_ipv4().
  * @param type type of ICMP packet (should be ICMP_TIMXCEED)
  * @param code code of ICMP packet (ICMP_TIMXCEED_INTRANS / ICMP_TIMXCEED_REASS)
@@ -808,18 +808,18 @@ u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
  * @param ptag protocol tag to modify an existing header, 0 to build a new one
  * @return protocol tag value on success, -1 on error
  */
-libnet_ptag_t 
+libnet_ptag_t
 libnet_build_ipv4(u_int16_t len, u_int8_t tos, u_int16_t id, u_int16_t frag,
 u_int8_t ttl, u_int8_t prot, u_int16_t sum, u_int32_t src, u_int32_t dst,
 u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
 
 /**
- * Builds an version 4 Internet Protocol (IP) options header. The function 
+ * Builds an version 4 Internet Protocol (IP) options header. The function
  * expects options to be a valid IP options string of size options_s, no larger
- * than 40 bytes (the maximum size of an options string). The function checks 
- * to make sure that the preceding header is an IPv4 header and that the 
- * options string would not result in a packet larger than 65,535 bytes 
- * (IPMAXPACKET). The function counts up the number of 32-bit words in the 
+ * than 40 bytes (the maximum size of an options string). The function checks
+ * to make sure that the preceding header is an IPv4 header and that the
+ * options string would not result in a packet larger than 65,535 bytes
+ * (IPMAXPACKET). The function counts up the number of 32-bit words in the
  * options string and adjusts the IP header length value as necessary.
  * @param options byte string of IP options
  * @param options_s length of options string
@@ -827,13 +827,13 @@ u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
  * @param ptag protocol tag to modify an existing header, 0 to build a new one
  * @return protocol tag value on success, -1 on error
  */
-libnet_ptag_t 
+libnet_ptag_t
 libnet_build_ipv4_options(u_int8_t *options, u_int32_t options_s, libnet_t *l,
 libnet_ptag_t ptag);
 
 /**
  * Autobuilds a version 4 Internet Protocol (IP) header. The function is useful  * to build an IP header quickly when you do not need a granular level of
- * control. The function takes the same len, prot, and dst arguments as 
+ * control. The function takes the same len, prot, and dst arguments as
  * libnet_build_ipv4(). The function does not accept a ptag argument, but it
  * does return a ptag. In other words, you can use it to build a new IP header
  * but not to modify an existing one.
@@ -863,7 +863,7 @@ libnet_autobuild_ipv4(u_int16_t len, u_int8_t prot, u_int32_t dst, libnet_t *l);
  */
 libnet_ptag_t
 libnet_build_ipv6(u_int8_t tc, u_int32_t fl, u_int16_t len, u_int8_t nh,
-u_int8_t hl, struct libnet_in6_addr src, struct libnet_in6_addr dst, 
+u_int8_t hl, struct libnet_in6_addr src, struct libnet_in6_addr dst,
 u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
 
 /**
@@ -885,7 +885,7 @@ libnet_ptag_t ptag);
 
 /**
  * Builds a version 6 RFC 2460 Internet Protocol (IP) routing header. This
- * function is special in that it uses the payload interface to include the 
+ * function is special in that it uses the payload interface to include the
  * "type-specific data"; that is the routing information. Most often this will
  * be a number of 128-bit IPv6 addresses. The application programmer will build
  * a byte string of IPv6 address and pass them to the function using the
@@ -908,7 +908,7 @@ libnet_ptag_t ptag);
 /**
  * Builds a version 6 RFC 2460 Internet Protocol (IP) destination options
  * header. This function is special in that it uses the payload interface to
- * include the options data. The application programmer will build an IPv6 
+ * include the options data. The application programmer will build an IPv6
  * options byte string and pass it to the function using the payload interface.
  * @param nh next header
  * @param len length of the header in 8-byte octets not including the first 8 octets
@@ -1101,7 +1101,7 @@ u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
 
 /**
  * Builds an IEEE 802.1d Spanning Tree Protocol (STP) configuration header.
- * STP frames are usually encapsulated inside of an 802.2 + 802.3 frame 
+ * STP frames are usually encapsulated inside of an 802.2 + 802.3 frame
  * combination.
  * @param id protocol id
  * @param version protocol version
@@ -1124,7 +1124,7 @@ u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
 libnet_ptag_t
 libnet_build_stp_conf(u_int16_t id, u_int8_t version, u_int8_t bpdu_type,
 u_int8_t flags, u_int8_t *root_id, u_int32_t root_pc, u_int8_t *bridge_id,
-u_int16_t port_id, u_int16_t message_age, u_int16_t max_age, 
+u_int16_t port_id, u_int16_t message_age, u_int16_t max_age,
 u_int16_t hello_time, u_int16_t f_delay, u_int8_t *payload,
 u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
 
@@ -1181,7 +1181,7 @@ u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
  * @return protocol tag value on success, -1 on error
  */
 libnet_ptag_t
-libnet_autobuild_token_ring(u_int8_t ac, u_int8_t fc, u_int8_t *dst, 
+libnet_autobuild_token_ring(u_int8_t ac, u_int8_t fc, u_int8_t *dst,
 u_int8_t dsap, u_int8_t ssap, u_int8_t cf, u_int8_t *oui, u_int16_t type,
 libnet_t *l);
 
@@ -1287,7 +1287,7 @@ libnet_build_ospfv2_hello(u_int32_t netmask, u_int16_t interval, u_int8_t opts,
 u_int8_t priority, u_int dead_int, u_int32_t des_rtr, u_int32_t bkup_rtr,
 u_int32_t neighbor, u_int8_t *payload, u_int32_t payload_s, libnet_t *l,
 libnet_ptag_t ptag);
- 
+
 /**
  * @param payload optional payload or NULL
  * @param payload_s payload length or 0
@@ -1299,7 +1299,7 @@ libnet_ptag_t
 libnet_build_ospfv2_dbd(u_int16_t dgram_len, u_int8_t opts, u_int8_t type,
 u_int seqnum, u_int8_t *payload, u_int32_t payload_s, libnet_t *l,
 libnet_ptag_t ptag);
- 
+
 /**
  * @param payload optional payload or NULL
  * @param payload_s payload length or 0
@@ -1310,7 +1310,7 @@ libnet_ptag_t ptag);
 libnet_ptag_t
 libnet_build_ospfv2_lsr(u_int type, u_int lsid, u_int32_t advrtr,
 u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
- 
+
 /**
  * @param payload optional payload or NULL
  * @param payload_s payload length or 0
@@ -1333,7 +1333,7 @@ libnet_ptag_t
 libnet_build_ospfv2_lsa(u_int16_t age, u_int8_t opts, u_int8_t type,
 u_int lsid, u_int32_t advrtr, u_int seqnum, u_int16_t sum, u_int16_t len,
 u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
- 
+
 /**
  * @param payload optional payload or NULL
  * @param payload_s payload length or 0
@@ -1345,7 +1345,7 @@ libnet_ptag_t
 libnet_build_ospfv2_lsa_rtr(u_int16_t flags, u_int16_t num, u_int id,
 u_int data, u_int8_t type, u_int8_t tos, u_int16_t metric, u_int8_t *payload,
 u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
- 
+
 /**
  * @param payload optional payload or NULL
  * @param payload_s payload length or 0
@@ -1356,7 +1356,7 @@ u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
 libnet_ptag_t
 libnet_build_ospfv2_lsa_net(u_int32_t nmask, u_int rtrid, u_int8_t *payload,
 u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
- 
+
 /**
  * @param payload optional payload or NULL
  * @param payload_s payload length or 0
@@ -1367,7 +1367,7 @@ u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
 libnet_ptag_t
 libnet_build_ospfv2_lsa_sum(u_int32_t nmask, u_int metric, u_int tos,
 u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
- 
+
 /**
  * @param payload optional payload or NULL
  * @param payload_s payload length or 0
@@ -1405,7 +1405,7 @@ libnet_ptag_t
 libnet_build_dhcpv4(u_int8_t opcode, u_int8_t htype, u_int8_t hlen,
 u_int8_t hopcount, u_int32_t xid, u_int16_t secs, u_int16_t flags,
 u_int32_t cip, u_int32_t yip,  u_int32_t sip, u_int32_t gip, u_int8_t *chaddr,
-u_int8_t *sname, u_int8_t *file, u_int8_t *payload, u_int32_t payload_s, 
+u_int8_t *sname, u_int8_t *file, u_int8_t *payload, u_int32_t payload_s,
 libnet_t *l, libnet_ptag_t ptag);
 
 /**
@@ -1419,7 +1419,7 @@ libnet_ptag_t
 libnet_build_bootpv4(u_int8_t opcode, u_int8_t htype, u_int8_t hlen,
 u_int8_t hopcount, u_int32_t xid, u_int16_t secs, u_int16_t flags,
 u_int32_t cip, u_int32_t yip,  u_int32_t sip, u_int32_t gip, u_int8_t *chaddr,
-u_int8_t *sname, u_int8_t *file, u_int8_t *payload, u_int32_t payload_s, 
+u_int8_t *sname, u_int8_t *file, u_int8_t *payload, u_int32_t payload_s,
 libnet_t *l, libnet_ptag_t ptag);
 
 /**
@@ -1594,17 +1594,17 @@ u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
  * Builds a Sebek header. The Sebek protocol was designed by the Honeynet
  * Project as a transport mechanism for post-intrusion forensic data. More
  * information may be found here: http://www.honeynet.org/papers/sebek.pdf.
- * @param magic identify packets that should be hidden 
- * @param version protocol version, currently 1 
- * @param type type of record (read data is type 0, write data is type 1) 
- * @param counter PDU counter used to identify when packet are lost 
- * @param time_sec seconds since EPOCH according to the honeypot 
- * @param time_usec residual microseconds 
- * @param pid PID 
- * @param uid UID 
- * @param fd FD 
- * @param cmd[SEBEK_CMD_LENGTH] 12 first characters of the command 
- * @param length length in bytes of the PDU's body 
+ * @param magic identify packets that should be hidden
+ * @param version protocol version, currently 1
+ * @param type type of record (read data is type 0, write data is type 1)
+ * @param counter PDU counter used to identify when packet are lost
+ * @param time_sec seconds since EPOCH according to the honeypot
+ * @param time_usec residual microseconds
+ * @param pid PID
+ * @param uid UID
+ * @param fd FD
+ * @param cmd[SEBEK_CMD_LENGTH] 12 first characters of the command
+ * @param length length in bytes of the PDU's body
  * @param payload optional payload or NULL
  * @param payload_s payload length or 0
  * @param l pointer to a libnet context
@@ -1612,9 +1612,9 @@ u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
  * @return protocol tag value on success, -1 on error
  */
 libnet_ptag_t
-libnet_build_sebek(u_int32_t magic, u_int16_t version, u_int16_t type, 
+libnet_build_sebek(u_int32_t magic, u_int16_t version, u_int16_t type,
 u_int32_t counter, u_int32_t time_sec, u_int32_t time_usec, u_int32_t pid,
-u_int32_t uid, u_int32_t fd, u_int8_t cmd[SEBEK_CMD_LENGTH], u_int32_t length, 
+u_int32_t uid, u_int32_t fd, u_int8_t cmd[SEBEK_CMD_LENGTH], u_int32_t length,
 u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
 
 /**
@@ -1632,7 +1632,7 @@ u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
  * @return protocol tag value on success, -1 on error
  */
 libnet_ptag_t
-libnet_build_link(u_int8_t *dst, u_int8_t *src, u_int8_t *oui, u_int16_t type, 
+libnet_build_link(u_int8_t *dst, u_int8_t *src, u_int8_t *oui, u_int16_t type,
 u_int8_t *payload, u_int32_t payload_s, libnet_t *l, libnet_ptag_t ptag);
 
 /**
@@ -1651,7 +1651,7 @@ libnet_t *l);
 
 /**
  * Writes a prebuilt packet to the network. The function assumes that l was
- * previously initialized (via a call to libnet_init()) and that a 
+ * previously initialized (via a call to libnet_init()) and that a
  * previously constructed packet has been built inside this context (via one or
  * more calls to the libnet_build* family of functions) and is ready to go.
  * Depending on how libnet was initialized, the function will write the packet
@@ -1667,7 +1667,7 @@ libnet_write(libnet_t *l);
 /**
  * Returns the IP address for the device libnet was initialized with. If
  * libnet was initialized without a device (in raw socket mode) the function
- * will attempt to find one. If the function fails and returns -1 a call to 
+ * will attempt to find one. If the function fails and returns -1 a call to
  * libnet_geterrror() will tell you why.
  * @param l pointer to a libnet context
  * @return a big endian IP address suitable for use in a libnet_build function or -1
@@ -1720,13 +1720,13 @@ libnet_hex_aton(int8_t *s, int *len);
  * @param l pointer to a libnet context
  * @param packet will contain the wire-ready packet
  * @param packet_s will contain the packet size
- * @return 1 on success, -1 on failure  
+ * @return 1 on success, -1 on failure
  */
 int
 libnet_adv_cull_packet(libnet_t *l, u_int8_t **packet, u_int32_t *packet_s);
 
 /**
- * [Advanced Interface] 
+ * [Advanced Interface]
  * Pulls the header from the specified ptag from the given libnet context. This
  * function is part of the advanced interface and is only available when libnet
  * is initialized in advanced mode. If the function fails libnet_geterror() can
@@ -1735,14 +1735,14 @@ libnet_adv_cull_packet(libnet_t *l, u_int8_t **packet, u_int32_t *packet_s);
  * @param ptag the ptag referencing the header to pull
  * @param header will contain the header
  * @param header_s will contain the header size
- * @return 1 on success, -1 on failure  
+ * @return 1 on success, -1 on failure
  */
 int
 libnet_adv_cull_header(libnet_t *l, libnet_ptag_t ptag, u_int8_t **header,
 u_int32_t *header_s);
 
 /**
- * [Advanced Interface] 
+ * [Advanced Interface]
  * Writes a packet the network at the link layer. This function is useful to
  * write a packet that has been constructed by hand by the application
  * programmer or, more commonly, to write a packet that has been returned by
@@ -1758,7 +1758,7 @@ int
 libnet_adv_write_link(libnet_t *l, u_int8_t *packet, u_int32_t packet_s);
 
 /**
- * [Advanced Interface] 
+ * [Advanced Interface]
  * Frees the memory allocated when libnet_adv_cull_packet() is called.
  * @param l pointer to a libnet context
  * @param packet a pointer to the packet to free
@@ -1767,7 +1767,7 @@ void
 libnet_adv_free_packet(libnet_t *l, u_int8_t *packet);
 
 /**
- * [Context Queue] 
+ * [Context Queue]
  * Adds a new context to the libnet context queue. If no queue exists, this
  * function will create the queue and add the specified libnet context as the
  * first entry on the list. The functions checks to ensure niether l nor label
@@ -1779,11 +1779,11 @@ libnet_adv_free_packet(libnet_t *l, u_int8_t *packet);
  * @param label a canonical name given to recognize the new context, no longer than LIBNET_LABEL_SIZE
  * @return 1 on success, -1 on failure
 */
-int 
+int
 libnet_cq_add(libnet_t *l, char *label);
 
 /**
- * [Context Queue] 
+ * [Context Queue]
  * Removes a specified context from the libnet context queue by specifying the
  * libnet context pointer. Note the function will remove the specified context
  * from the context queue and cleanup internal memory from the queue, it is up
@@ -1799,40 +1799,40 @@ libnet_cq_add(libnet_t *l, char *label);
 libnet_t *
 libnet_cq_remove(libnet_t *l);
 
-/** 
- * [Context Queue] 
+/**
+ * [Context Queue]
  * Removes a specified context from the libnet context queue by specifying the
  * canonical name. Note the function will remove the specified context from
- * the context queue and cleanup internal memory from the queue, it is up to 
+ * the context queue and cleanup internal memory from the queue, it is up to
  * the application programmer to free the returned libnet context with a call
  * to libnet_destroy(). If the context queue is write locked, this function
  * will fail.
  * @param label canonical name of the context to remove
  * @return the pointer to the removed libnet context, NULL on failure
- */   
+ */
 libnet_t *
 libnet_cq_remove_by_label(char *label);
- 
+
 /**
- * [Context Queue] 
+ * [Context Queue]
  * Returns the canonical label associated with the context.
  * @param l pointer to a libnet context
  * @return pointer to the libnet context's label
- */   
+ */
 int8_t *
 libnet_cq_getlabel(libnet_t *l);
- 
+
 /**
- * [Context Queue] 
+ * [Context Queue]
  * Locates a libnet context from the queue, indexed by a canonical label.
  * @param label canonical label of the libnet context to retrieve
  * @return the expected libnet context, NULL on failure
  */
 libnet_t *
 libnet_cq_find_by_label(char *label);
-  
+
 /**
- * [Context Queue] 
+ * [Context Queue]
  * Destroys the entire context queue, calling libnet_destroy() on each
  * member context.
  */
@@ -1840,7 +1840,7 @@ void
 libnet_cq_destroy();
 
 /**
- * [Context Queue] 
+ * [Context Queue]
  * Intiailizes the interator interface and set a write lock on the entire
  * queue. This function is intended to be called just prior to interating
  * through the entire list of contexts (with the probable intent of inject a
@@ -1862,7 +1862,7 @@ libnet_t *
 libnet_cq_head();
 
 /**
- * [Context Queue] 
+ * [Context Queue]
  * Check whether the iterator is at the last context in the queue.
  * @return 1 if at the end of the context queue, 0 otherwise
  */
@@ -1870,7 +1870,7 @@ int
 libnet_cq_last();
 
 /**
- * [Context Queue] 
+ * [Context Queue]
  * Get next context from the context queue.
  * @reutrn the next context from the context queue
  */
@@ -1878,7 +1878,7 @@ libnet_t *
 libnet_cq_next();
 
 /**
- * [Context Queue] 
+ * [Context Queue]
  * Function returns the number of libnet contexts that are in the queue.
  * @return the number of libnet contexts currently in the queue
  */
@@ -1886,7 +1886,7 @@ u_int32_t
 libnet_cq_size();
 
 /**
- * [Diagnostic] 
+ * [Diagnostic]
  * Prints the contents of the given context.
  * @param l pointer to a libnet context
  */
@@ -1894,7 +1894,7 @@ void
 libnet_diag_dump_context(libnet_t *l);
 
 /**
- * [Diagnostic] 
+ * [Diagnostic]
  * Prints the contents of every pblock.
  * @param l pointer to a libnet context
  */
@@ -1902,7 +1902,7 @@ void
 libnet_diag_dump_pblock(libnet_t *l);
 
 /**
- * [Diagnostic] 
+ * [Diagnostic]
  * Returns the canonical name of the pblock type.
  * @param type pblock type
  * @return a string representing the pblock type type or "unknown" for an unknown value
@@ -1911,7 +1911,7 @@ char *
 libnet_diag_dump_pblock_type(u_int8_t type);
 
 /**
- * [Diagnostic] 
+ * [Diagnostic]
  * Function prints the contents of the supplied buffer to the supplied
  * stream pointer. Will swap endianness based disposition of mode variable.
  * Useful to be used in conjunction with the advanced interface and a culled
@@ -1925,110 +1925,110 @@ void
 libnet_diag_dump_hex(u_int8_t *packet, u_int32_t len, int swap, FILE *stream);
 
 /*
- * [Internal] 
+ * [Internal]
  */
 int
 libnet_write_raw_ipv4(libnet_t *l, u_int8_t *packet, u_int32_t size);
 
 /*
- * [Internal] 
+ * [Internal]
  */
 int
 libnet_write_raw_ipv6(libnet_t *l, u_int8_t *packet, u_int32_t size);
 
 /*
- * [Internal] 
+ * [Internal]
  */
 int
 libnet_write_link(libnet_t *l, u_int8_t *packet, u_int32_t size);
 
 #if ((__WIN32__) && !(__CYGWIN__))
 /*
- * [Internal] 
+ * [Internal]
  */
 SOCKET
 libnet_open_raw4(libnet_t *l);
 #else
 /*
- * [Internal] 
+ * [Internal]
  */
 int
 libnet_open_raw4(libnet_t *l);
 #endif
 
 /*
- * [Internal] 
+ * [Internal]
  */
 int
 libnet_close_raw4(libnet_t *l);
 
 /*
- * [Internal] 
+ * [Internal]
  */
 int
 libnet_open_raw6(libnet_t *l);
-       
+
 /*
- * [Internal] 
+ * [Internal]
  */
 int
 libnet_close_raw6(libnet_t *l);
 
 /*
- * [Internal] 
+ * [Internal]
  */
 int
 libnet_select_device(libnet_t *l);
 
 /*
- * [Internal] 
+ * [Internal]
  */
 int
 libnet_open_link(libnet_t *l);
 
 /*
- * [Internal] 
+ * [Internal]
  */
 int
 libnet_close_link(libnet_t *l);
 
 /*
- * [Internal] 
+ * [Internal]
  */
 int
 libnet_do_checksum(libnet_t *l, u_int8_t *packet, int protocol, int len);
 
 /*
- * [Internal] 
+ * [Internal]
  */
 u_int32_t
 libnet_compute_crc(u_int8_t *buf, u_int32_t len);
 
 /*
- * [Internal] 
+ * [Internal]
  */
 u_int16_t
 libnet_ip_check(u_int16_t *addr, int len);
 
 /*
- * [Internal] 
+ * [Internal]
  */
 int
 libnet_in_cksum(u_int16_t *addr, int len);
 
 /*
- * [Internal] 
+ * [Internal]
  * If ptag is 0, function will create a pblock for the protocol unit type,
  * append it to the list and return a pointer to it.  If ptag is not 0,
- * function will search the pblock list for the specified protocol block 
+ * function will search the pblock list for the specified protocol block
  * and return a pointer to it.
  */
 libnet_pblock_t *
-libnet_pblock_probe(libnet_t *l, libnet_ptag_t ptag, u_int32_t n, 
+libnet_pblock_probe(libnet_t *l, libnet_ptag_t ptag, u_int32_t n,
 u_int8_t type);
 
 /*
- * [Internal] 
+ * [Internal]
  * Function creates the pblock list if l->protocol_blocks == NULL or appends
  * an entry to the doubly linked list.
  */
@@ -2036,14 +2036,14 @@ libnet_pblock_t *
 libnet_pblock_new(libnet_t *l, u_int32_t size);
 
 /*
- * [Internal] 
+ * [Internal]
  * Function swaps two pblocks in memory.
  */
 int
 libnet_pblock_swap(libnet_t *l, libnet_ptag_t ptag1, libnet_ptag_t ptag2);
 
 /*
- * [Internal] 
+ * [Internal]
  * Function inserts a pblock into the doubly linked list.
  */
 int
@@ -2051,20 +2051,20 @@ libnet_pblock_insert_before(libnet_t *l, libnet_ptag_t ptag1,
 libnet_ptag_t ptag2);
 
 /*
- * [Internal] 
- * Function removes a pblock from context 
+ * [Internal]
+ * Function removes a pblock from context
  */
 void
 libnet_pblock_delete(libnet_t *l, libnet_pblock_t *p);
 
 /*
- * [Internal] 
+ * [Internal]
  * Function updates the pblock meta-inforation.  Internally it updates the
  * ptag with a monotonically increasing variable kept in l.  This way each
  * pblock has a succesively increasing ptag identifier.
  */
 libnet_ptag_t
-libnet_pblock_update(libnet_t *l, libnet_pblock_t *p, u_int32_t h, 
+libnet_pblock_update(libnet_t *l, libnet_pblock_t *p, u_int32_t h,
 u_int8_t type);
 
 
@@ -2080,14 +2080,14 @@ void
 libnet_pblock_record_ip_offset(libnet_t *l, u_int32_t offset);
 
 /*
- * [Internal] 
- * Function locates a given block by it's ptag. 
+ * [Internal]
+ * Function locates a given block by it's ptag.
  */
 libnet_pblock_t *
 libnet_pblock_find(libnet_t *l, libnet_ptag_t ptag);
 
 /*
- * [Internal] 
+ * [Internal]
  * Function copies protocol block data over.
  */
 int
@@ -2095,14 +2095,14 @@ libnet_pblock_append(libnet_t *l, libnet_pblock_t *p, u_int8_t *buf,
 u_int32_t len);
 
 /*
- * [Internal] 
+ * [Internal]
  * Function sets pblock flags.
  */
 void
 libnet_pblock_setflags(libnet_pblock_t *p, u_int8_t flags);
 
 /*
- * [Internal] 
+ * [Internal]
  * Function returns the protocol number for the protocol block type.  If
  * the type is unknown, the function defaults to returning IPPROTO_IP.
  */
@@ -2110,7 +2110,7 @@ int
 libnet_pblock_p2p(u_int8_t type);
 
 /*
- * [Internal] 
+ * [Internal]
  * Function assembles the packet for subsequent writing.  Function makes two
  * passes through the pblock list:
  */
@@ -2119,7 +2119,7 @@ libnet_pblock_coalesce(libnet_t *l, u_int8_t **packet, u_int32_t *size);
 
 #if !(__WIN32__)
 /*
- * [Internal] 
+ * [Internal]
  * By testing if we can retrieve the FLAGS of an iface
  * we can know if it exists or not and if it is up.
  */
@@ -2129,21 +2129,21 @@ libnet_check_iface(libnet_t *l);
 
 #if defined(__WIN32__)
 /*
- * [Internal] 
+ * [Internal]
  */
 BYTE *
 libnet_win32_get_remote_mac(libnet_t *l, DWORD IP);
 
 /*
- * [Internal] 
+ * [Internal]
  */
 int
 libnet_close_link_interface(libnet_t *l);
 
 /*
- * [Internal] 
+ * [Internal]
  */
-BYTE * 
+BYTE *
 libnet_win32_read_arp_table(DWORD IP);
 #endif
 #endif  /* __LIBNET_FUNCTIONS_H */

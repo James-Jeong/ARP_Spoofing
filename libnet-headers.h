@@ -98,7 +98,7 @@
 #define LIBNET_RPC_CALL_TCP_H   0x2c    /**< RPC header:          44 bytes
                                          * (with record marking)
                                          */
-#define LIBNET_SEBEK_H          0x30    /* sebek header:          48 bytes */   
+#define LIBNET_SEBEK_H          0x30    /* sebek header:          48 bytes */
 #define LIBNET_STP_CONF_H       0x23    /**< STP conf header:     35 bytes */
 #define LIBNET_STP_TCN_H        0x04    /**< STP tcn header:       4 bytes */
 #define LIBNET_TOKEN_RING_H     0x16    /**< Token Ring header:   22 bytes */
@@ -107,7 +107,7 @@
 #define LIBNET_VRRP_H           0x08    /**< VRRP header:          8 bytes */
 
 /**
- * IEEE 802.1Q (Virtual Local Area Network) VLAN header, static header 
+ * IEEE 802.1Q (Virtual Local Area Network) VLAN header, static header
  * size: 18 bytes
  */
 struct libnet_802_1q_hdr
@@ -120,7 +120,7 @@ struct libnet_802_1q_hdr
 #define LIBNET_802_1Q_CFIMASK   0x0001    /**< CFI mask */
 #define LIBNET_802_1Q_VIDMASK   0x0fff    /**< vid mask */
     u_int16_t vlan_len;                   /**< length or type (802.3 / Eth 2) */
-};  
+};
 
 /**
  * IEEE 802.1X EAP (Extensible Authentication Protocol) header, static header
@@ -136,7 +136,7 @@ struct libnet_802_1x_hdr
 #define LIBNET_802_1X_KEY       0x03      /**< 802.1x key */
 #define LIBNET_802_1X_ENCASFAL  0x04      /**< 802.1x encasfal */
     u_int16_t dot1x_length;               /**< total frame length */
-};  
+};
 
 /*
  *  IEEE 802.2 LLC header
@@ -181,7 +181,7 @@ struct libnet_802_3_hdr
 };
 
 
-/* 
+/*
  *  ARP header
  *  Address Resolution Protocol
  *  Base header size: 8 bytes
@@ -519,7 +519,7 @@ struct libnet_ether_addr
  *  Static header size: 21 bytes (LLC and 48-bit address addr only)
  *
  *  Note: Organization field is 3 bytes which throws off the
- *        alignment of type.  Therefore fddi_type (19 bytes in) 
+ *        alignment of type.  Therefore fddi_type (19 bytes in)
  *        is specified as two u_int8_ts.
  */
 struct libnet_fddi_hdr
@@ -527,7 +527,7 @@ struct libnet_fddi_hdr
     u_int8_t  fddi_frame_control;                      /* Class/Format/Priority */
 #define LIBNET_FDDI_LLC_FRAME  0x10
 #define LIBNET_FDDI_48BIT_ADDR 0x40
-#define LIBNET_FDDI_FC_REQD    LIBNET_FDDI_LLC_FRAME | LIBNET_FDDI_48BIT_ADDR 
+#define LIBNET_FDDI_FC_REQD    LIBNET_FDDI_LLC_FRAME | LIBNET_FDDI_48BIT_ADDR
     u_int8_t  fddi_dhost[FDDI_ADDR_LEN];               /* destination fddi address */
     u_int8_t  fddi_shost[FDDI_ADDR_LEN];               /* source fddi address */
     u_int8_t  fddi_llc_dsap;                           /* DSAP */
@@ -550,7 +550,7 @@ struct libnet_fddi_addr
 
 /*
  * GRE header - RFC 1701 & 2637
- * Generic Routing Encapsulation (GRE) 
+ * Generic Routing Encapsulation (GRE)
  * Base header size: 4 bytes
  */
 struct libnet_gre_hdr
@@ -594,19 +594,19 @@ struct libnet_gre_hdr
 #define GRE_PPP                                 0x880b /* taken from RFC 2637 */
 
     union {
-	struct {
-	    u_int16_t sum;  /* optional */
-	    u_int16_t offset;    /* optional */
-	    u_int32_t key;        /* optional */
-	    u_int32_t seq;        /* optional */
-	} _gre;
+    struct {
+        u_int16_t sum;  /* optional */
+        u_int16_t offset;    /* optional */
+        u_int32_t key;        /* optional */
+        u_int32_t seq;        /* optional */
+    } _gre;
 
-	struct {
-	    u_int16_t payload_s; /* optional */
-	    u_int16_t callID;    /* optional */
-	    u_int32_t seq;        /* optional */
-	    u_int32_t ack;        /* optional */
-	} _egre;
+    struct {
+        u_int16_t payload_s; /* optional */
+        u_int16_t callID;    /* optional */
+        u_int32_t seq;        /* optional */
+        u_int32_t ack;        /* optional */
+    } _egre;
     }_data;
 
 #define gre_sum _data._gre.sum
@@ -678,7 +678,7 @@ struct libnet_ipv4_hdr
 #endif
 #ifndef IP_MF
 #define IP_MF 0x2000        /* more fragments flag */
-#endif 
+#endif
 #ifndef IP_OFFMASK
 #define IP_OFFMASK 0x1fff   /* mask for fragmenting bits */
 #endif
@@ -696,7 +696,7 @@ struct libnet_ipv4_hdr
 #endif
 #ifndef IPOPT_NOP
 #define IPOPT_NOP       1   /* no operation */
-#endif   
+#endif
 #ifndef IPOPT_RR
 #define IPOPT_RR        7   /* record packet route */
 #endif
@@ -704,7 +704,7 @@ struct libnet_ipv4_hdr
 #define IPOPT_TS        68  /* timestamp */
 #endif
 #ifndef IPOPT_SECURITY
-#define IPOPT_SECURITY  130 /* provide s,c,h,tcc */   
+#define IPOPT_SECURITY  130 /* provide s,c,h,tcc */
 #endif
 #ifndef IPOPT_LSRR
 #define IPOPT_LSRR      131 /* loose source route */
@@ -972,7 +972,7 @@ struct libnet_icmpv4_hdr
 #undef icmp_seq
 #define icmp_id     hun.echo.id
 #define icmp_seq    hun.echo.seq
- 
+
         u_int32_t gateway; /* gateway host */
         struct
         {
@@ -1060,7 +1060,7 @@ struct libnet_esp_ftr
     u_int8_t esp_nh;     /* next header pointer */
     int8_t *esp_auth;         /* authentication data */
 };
- 
+
 #ifndef IPPROTO_AH
 #define IPPROTO_AH 51       /* not everyone's got this */
 #endif
@@ -1186,7 +1186,7 @@ struct libnet_ntp_hdr
 #define LIBNET_NTP_REF_PPS      0x50505300  /* atomic / pulse-per-second clock */
 #define LIBNET_NTP_REF_ACTS     0x41435453  /* NIST dialup modem */
 #define LIBNET_NTP_REF_USNO     0x55534e4f  /* USNO modem service */
-#define LIBNET_NTP_REF_PTB      0x50544200  /* PTB (German) modem service */ 
+#define LIBNET_NTP_REF_PTB      0x50544200  /* PTB (German) modem service */
 #define LIBNET_NTP_REF_TDF      0x54444600  /* Allouis (French) radio */
 #define LIBNET_NTP_REF_DCF      0x44434600  /* Mainflingen (German) radio */
 #define LIBNET_NTP_REF_MSF      0x4d534600  /* Rugby (UK) radio */
@@ -1198,7 +1198,7 @@ struct libnet_ntp_hdr
 #define LIBNET_NTP_REF_OMEG     0x4f4d4547  /* OMEGA radionavigation */
 #define LIBNET_NTP_REF_GPS      0x47505300  /* global positioning system */
 #define LIBNET_NTP_REF_GOES     0x474f4553  /* geostationary orbit env satellite */
-    struct libnet_ntp_hdr_l_fp ntp_ref_ts;  /* reference timestamp */ 
+    struct libnet_ntp_hdr_l_fp ntp_ref_ts;  /* reference timestamp */
     struct libnet_ntp_hdr_l_fp ntp_orig_ts; /* originate timestamp */
     struct libnet_ntp_hdr_l_fp ntp_rec_ts;  /* receive timestamp */
     struct libnet_ntp_hdr_l_fp ntp_xmt_ts;  /* transmit timestamp */
@@ -1361,8 +1361,8 @@ struct libnet_net_lsa_hdr
     struct in_addr net_nmask;   /* Netmask for that network */
     u_int  net_rtr_id;          /* ID of router attached to that network */
 };
- 
- 
+
+
 /*
  *  Summary LSA data format.
  */
@@ -1372,8 +1372,8 @@ struct libnet_sum_lsa_hdr
     u_int  sum_metric;          /* Same as in rtr_lsa (&0xfff to use last 24bit */
     u_int  sum_tos_metric;      /* first 8bits are TOS, 24bits are TOS Metric */
 };
- 
- 
+
+
 /*
  *  AS External LSA data format.
  *  & 0xfff logic operator for as_metric to get last 24bits.
@@ -1552,7 +1552,7 @@ struct libnet_tcp_hdr
 #ifndef TH_ECE
 #define TH_ECE    0x40
 #endif
-#ifndef TH_CWR   
+#ifndef TH_CWR
 #define TH_CWR    0x80
 #endif
     u_int16_t th_win;         /* window */
