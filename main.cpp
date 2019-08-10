@@ -36,10 +36,11 @@ char* make_Parameter_REQ(int num, char* at_ip_addr, char* at_mac_addr, char* ip,
 	strncpy(pt2->sip, at_ip_addr, strlen(at_ip_addr));
 	strncpy(pt2->smac, at_mac_addr, strlen(at_mac_addr));
 	strncpy(pt2->tip, ip, strlen(ip));
-	strncpy(pt2->tmac, temp_mac, strlen(temp_mac));
+	//strncpy(pt2->tmac, temp_mac, strlen(temp_mac));
 	pt2->handle = handles;
 	pt2->session_Number = num;
-
+	pt2->smac[12] = '\0';
+	
 	pthread_create(&thread[num], NULL, find_Mac, (void*)(pt2));
 	pthread_join(thread[num], (void**)(&temp_mac));
 	return temp_mac;
@@ -47,16 +48,22 @@ char* make_Parameter_REQ(int num, char* at_ip_addr, char* at_mac_addr, char* ip,
 
 
 // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-// argv[1] : interface
-// argv[2] : sender ip1 / argv[3] : target ip1
-// argv[2] : sender ip2 / argv[3] : target ip2
+// argv[1] : sender ip1 / argv[2] : target ip1
+// argv[3] : sender ip2 / argv[3] : target ip2
 // ...
 int main(int argc, char* argv[]) {
-	if(argc < 3){
+	if(argc < 2){
 		usage();
 		perror("Wrong Parameter!");
 		exit(0);
 	}
+
+	num_of_parameter = (argc)/2;
+	if(num_of_parameter > 20){
+		perror("Overflow of Session!");
+		exit(0);
+	}
+	printf("[ NUM_OF_PRARMETER : %d ]\n", num_of_parameter);
 
 // ########## Set sigaction fuction for SIGINT(ctrl + c) ##########
 	struct sigaction sa;
@@ -74,7 +81,7 @@ int main(int argc, char* argv[]) {
 	char* dev = pcap_lookupdev(errbuf); char* net; char* mask;
 	bpf_u_int32 netp; bpf_u_int32 maskp;
 	struct pcap_pkthdr hdr; struct in_addr net_addr, mask_addr;
-	int cnt = 2;
+	int cnt = 1;
 
 	if(dev == NULL) { printf("%s\n", errbuf); exit(1); }
 	printf("Dev : %s\n", dev);
@@ -94,14 +101,15 @@ int main(int argc, char* argv[]) {
 	for(int i = 0; i < num_of_parameter; i++){
 		src_str[i] = (char*)malloc(sizeof(20));
 		strncpy(src_str[i], "src ", 4);
+		src_str[i][4] = '\0';
 		strncat(src_str[i], argv[cnt], strlen(argv[cnt]));
+		//printf("src_str[%d] : %s\n", i, src_str[i]);
 		cnt += 2;
 	}
 
-	cnt = 0;
 	// P Mode
 	for(int i = 0; i < num_of_parameter; i++){
-		handle[i] = pcap_open_live(dev, BUFSIZ, PROMISCUOUS_MODE, 1000, errbuf);
+		handle[i] = pcap_open_live(dev, BUFSIZ, NON_PROMISCUOUS_MODE, 100, errbuf);
 		if (handle[i] == NULL) {
 			fprintf(stderr, "handle[%d] couldn't open device %s: %s\n", i, dev, errbuf);
 			return -1;
@@ -115,9 +123,8 @@ int main(int argc, char* argv[]) {
 			printf("Setfilter ERROR!\n");
 			exit(1);
 		}
-		cnt += 2;
 	}
-	cnt = 2;
+	cnt = 1;
 // ########################################
 
 // ########## Make a socket to find my IP & MAC address ##########
@@ -136,24 +143,18 @@ int main(int argc, char* argv[]) {
 // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 // @@@@@@@@@ Management of Sessions @@@@@@@@@
 // Session(char* sender_mac, char* sender_ip, char* target_mac, char* target_ip)
-	num_of_parameter = (argc-1)/2;
-	if(num_of_parameter > 20){
-		perror("Overflow of Session!");
-		exit(0);
-	}
-
 	char* smac[num_of_parameter];
 	char* dmac[num_of_parameter];
 
 	Session s[SESSION_NUM];
 	char eb[PCAP_ERRBUF_SIZE];
-	pcap_t* h = pcap_open_live(dev, BUFSIZ, PROMISCUOUS_MODE, 1000, eb);
-	if (h == NULL) {
-		fprintf(stderr, "h couldn't open device %s: %s\n", dev, eb);
-		return -1;
-	}
-		
-	printf("[ NUM_OF_PRARMETER : %d ]\n", num_of_parameter);
+	//pcap_t* h = pcap_open_live(dev, BUFSIZ, PROMISCUOUS_MODE, 1000, eb);
+	//if (h == NULL) {
+	//	fprintf(stderr, "h couldn't open device %s: %s\n", dev, eb);
+	//	return -1;
+	//}
+
+	pcap_t* h = pcap_open_live(dev, BUFSIZ, NON_PROMISCUOUS_MODE, 100, errbuf);
 	for(int i = 0; i < num_of_parameter; i++){
 		// Find mac using pcap_sendpacket
 		smac[i] = (char*)malloc(sizeof(char) * 40);
@@ -168,6 +169,7 @@ int main(int argc, char* argv[]) {
 		if(dmac[i] == NULL){ perror("dmac malloc error"); exit(1); }	
 		char* t_dmac = (char*)malloc(sizeof(char) * 40);
 		if(t_dmac == NULL){ perror("t_mac malloc error"); exit(1); }
+		printf("argv[%d] : %s\n", cnt+1, argv[cnt+1]);
 		t_dmac = make_Parameter_REQ(i+1, s_ip_addr, a_mac_addr, argv[cnt+1], h);
 		dmac[i] = t_dmac;
 		printf("[ < %d > Success to find < %s > mac address : %s ]\n", i+1, argv[cnt+1], dmac[i]);
@@ -177,7 +179,7 @@ int main(int argc, char* argv[]) {
 	}
 	pcap_close(h);
 	
-	cnt = 2;
+	cnt = 1;
 	struct Parameter_Pthread* pt[num_of_parameter];
 	for(int i = 0; i < num_of_parameter; i++){
 		pt[i] = (struct Parameter_Pthread*)malloc(sizeof(struct Parameter_Pthread));
