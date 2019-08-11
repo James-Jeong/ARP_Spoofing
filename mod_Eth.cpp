@@ -3,8 +3,6 @@
 int Ethernet_header::Check_Eth(const u_char* Packet_DATA, char* sender_mac, char* target_mac, char* my_mac){
     int sum = 0;
     struct libnet_ethernet_hdr* EH = (struct libnet_ethernet_hdr*)(Packet_DATA);
-    u_short ethernet_type;
-    ethernet_type = ntohs(EH->ether_type);
 
     char* EH_smac = (char*)malloc(sizeof(sender_mac));
     if(EH_smac == NULL){ perror("EH_smac malloc error"); exit(1); }

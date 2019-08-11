@@ -27,5 +27,6 @@ int UDP_header::Print_UDP(const u_char* Packet_DATA){
     printf("UDP Length : %d\n", UH->uh_ulen);
     printf("UDP checksum : %x\n", UH->uh_sum);
 
+    free(dp); free(sp);
     return (UH->uh_ulen);
 }
