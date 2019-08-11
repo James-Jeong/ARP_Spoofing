@@ -4,12 +4,12 @@
 #define SESSION_H
 class Session{
     private:
-        int session_Num;
-        char* smac;
-        char* sip;
-        char* tmac;
-        char* tip;
-        char* attack_mac;
+        int 	session_Num;
+        char 	sip[16];
+        char 	smac[13];
+        char 	tip[16];
+        char 	tmac[13];
+        char    attack_mac[13];
         pcap_t* handle;
     public:
         Session(){}
