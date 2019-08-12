@@ -2,7 +2,7 @@
 using namespace std;
 
 pthread_t thread[PTHREAD_NUM];
-pthread_t session_thread[PTHREAD_NUM];
+pthread_t attack_thread[PTHREAD_NUM];
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 int num_of_parameter = 0;
@@ -14,7 +14,8 @@ void terminate_Process(int sig){
         for(int i = 0; i < num_of_parameter; i++){
             kill(pid[i], SIGKILL);
             pthread_join(thread[i], NULL);
-            pthread_join(session_thread[i], NULL);
+            pthread_join(attack_thread[i], NULL);
+            //pthread_join(session_thread[i], NULL);
         }
         pcap_close(handle);
     }
@@ -152,15 +153,16 @@ int main(int argc, char* argv[]) {
         pt[i]->session_Number = i+1;
         // ########################################
 
-        printf("main pass\n");
         // ########## Attack ##########
-        s[i].set(i+1, smac[i], argv[cnt], dmac[i], argv[cnt+1], handle, a_mac_addr, pt[i]);
+        s[i].set(i+1, smac[i], argv[cnt], dmac[i], argv[cnt+1], handle, a_mac_addr, pt[i], attack_thread[i]);
         // ########################################
         cnt += 2;
     }
 
-    for(int i = 0; i < num_of_parameter; i++){
-       s[i].handle_session();
+    while(1){
+        for(int i = 0; i < num_of_parameter; i++){
+           s[i].handle_session();
+        }
     }
 }
 
