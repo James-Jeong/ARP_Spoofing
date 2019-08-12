@@ -14,6 +14,6 @@ class Session{
     public:
         Session(){}
         void handle_session();
-        void set(int sn, char* sender_mac, char* sender_ip, char* target_mac, char* target_ip, pcap_t* handle, char* attacker_mac, struct Parameter_Pthread* pt);
+        void set(int sn, char* sender_mac, char* sender_ip, char* target_mac, char* target_ip, pcap_t* handle, char* attacker_mac, struct Parameter_Pthread* pt, pthread_t thread);
 };
 #endif
