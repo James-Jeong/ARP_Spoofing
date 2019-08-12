@@ -4,6 +4,7 @@
 - IP address : sender's ip address / target's ip address
 2. output
 - spoofed & sniffed packets
+- Send attack packets to sender & target both : supported to attack 2 times per 1~6 random seconds (asynchronous attack)
 
 # Command
 - sudo ./ARP_S (device name) (sender's ip address) (target's ip address) (target's ip address) (sender's ip address) ...
