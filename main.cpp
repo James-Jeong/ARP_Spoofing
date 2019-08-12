@@ -15,7 +15,6 @@ void terminate_Process(int sig){
             kill(pid[i], SIGKILL);
             pthread_join(thread[i], NULL);
             pthread_join(attack_thread[i], NULL);
-            //pthread_join(session_thread[i], NULL);
         }
         pcap_close(handle);
     }
@@ -30,15 +29,8 @@ char* make_Parameter_REQ(int num, char* at_ip_addr, char* at_mac_addr, char* ip,
     strncpy(pt2->smac, at_mac_addr, 12);
     pt2->smac[13] = '\0';
     strncpy(pt2->tip, ip, 16);
-    //strncpy(pt2->tmac, temp_mac, strlen(temp_mac));
     pt2->handle = handles;
     pt2->session_Number = num;
-    //pt2->sip[strlen(pt2->sip)] = '\0';
-    //pt2->tip[strlen(pt2->tip)] = '\0';
-
-    printf("pt2->sip : %s\n", pt2->sip);
-    printf("pt2->smac : %s\n", pt2->smac);
-    printf("pt2->tip : %s\n", pt2->tip);
 
     pthread_create(&thread[num], NULL, find_Mac, (void*)(pt2));
     pthread_join(thread[num], (void**)(&temp_mac));
@@ -53,7 +45,7 @@ char* make_Parameter_REQ(int num, char* at_ip_addr, char* at_mac_addr, char* ip,
 // ...
 int main(int argc, char* argv[]) {
     if(argc < 3){
-        usage();
+        usage(argv[1]);
         perror("Wrong Parameter!");
         exit(0);
     }
@@ -107,7 +99,6 @@ int main(int argc, char* argv[]) {
 
 // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 // @@@@@@@@@ Management of Sessions @@@@@@@@@
-// Session(char* sender_mac, char* sender_ip, char* target_mac, char* target_ip)
     char* smac[num_of_parameter];
     char* dmac[num_of_parameter];
 
@@ -121,7 +112,7 @@ int main(int argc, char* argv[]) {
         t_smac = make_Parameter_REQ(i+1, s_ip_addr, a_mac_addr, argv[cnt], handle);
         smac[i] = t_smac;
         smac[i][13] = '\0';
-        printf("[ < %d > Success to find < %s > mac address : %s ]\n", i+1, argv[cnt], smac[i]);
+        printf("[ < Session %d > Success to find < %s > mac address : %s ]\n", i+1, argv[cnt], smac[i]);
 
         dmac[i] = (char*)malloc(13);
         if(dmac[i] == NULL){ perror("dmac malloc error"); exit(1); }
@@ -130,9 +121,9 @@ int main(int argc, char* argv[]) {
         t_dmac = make_Parameter_REQ(i+1, s_ip_addr, a_mac_addr, argv[cnt+1], handle);
         dmac[i] = t_dmac;
         dmac[i][13] = '\0';
-        printf("[ < %d > Success to find < %s > mac address : %s ]\n", i+1, argv[cnt+1], dmac[i]);
-        printf("%d smac : %s\n", i, smac[i]);
-        printf("%d dmac : %s\n", i, dmac[i]);
+        printf("[ < Session %d > Success to find < %s > mac address : %s ]\n", i+1, argv[cnt+1], dmac[i]);
+        printf("[ Session %d / smac : %s ]\n", i, smac[i]);
+        printf("[ Session %d / dmac : %s ]\n\n", i, dmac[i]);
         cnt += 2;
     }
 
