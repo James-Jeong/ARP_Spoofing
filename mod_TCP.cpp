@@ -7,10 +7,9 @@ int TCP_header::Print_TCP(const u_char* Packet_DATA){
     if(TH->th_off < 4) return 0;
 
     char sp[6];
-    //char* sp = (char*)malloc(sizeof(TH->th_sport));
     sprintf(sp, "%d", ntohs(TH->th_sport));
+
     char dp[6];
-    //char* dp = (char*)malloc(sizeof(TH->th_dport));
     sprintf(dp, "%d", ntohs(TH->th_dport));
 
     //printf("sp : %s\n", sp);
