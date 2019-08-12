@@ -4,8 +4,9 @@ int Ethernet_header::Check_Eth(const u_char* Packet_DATA, char* sender_mac, char
     int sum = 0;
     struct libnet_ethernet_hdr* EH = (struct libnet_ethernet_hdr*)(Packet_DATA);
 
-    char* EH_smac = (char*)malloc(sizeof(sender_mac));
-    if(EH_smac == NULL){ perror("EH_smac malloc error"); exit(1); }
+    char EH_smac[13];
+    //char* EH_smac = (char*)malloc(13);
+    //if(EH_smac == NULL){ perror("EH_smac malloc error"); exit(1); }
     sprintf(EH_smac, "%02x%02x%02x%02x%02x%02x",
         EH->ether_shost[0],
         EH->ether_shost[1],
@@ -14,8 +15,9 @@ int Ethernet_header::Check_Eth(const u_char* Packet_DATA, char* sender_mac, char
         EH->ether_shost[4],
         EH->ether_shost[5]);
 
-    char* EH_dmac = (char*)malloc(sizeof(target_mac));
-    if(EH_dmac == NULL){ perror("EH_dmac malloc error"); exit(1); }
+    char EH_dmac[13];
+    //char* EH_dmac = (char*)malloc(13);
+    //if(EH_dmac == NULL){ perror("EH_dmac malloc error"); exit(1); }
     sprintf(EH_dmac, "%02x%02x%02x%02x%02x%02x",
         EH->ether_dhost[0],
         EH->ether_dhost[1],
@@ -32,23 +34,23 @@ int Ethernet_header::Check_Eth(const u_char* Packet_DATA, char* sender_mac, char
 
     // Is sender mac address equal to EH's mac address?
     if(strncmp(sender_mac, EH_smac, strlen(sender_mac)) == 0){
-        printf("sender_mac == EH_smac\n");
+        //printf("sender_mac == EH_smac\n");
         sum += 1;
     }
     if(strncmp(my_mac, EH_dmac, strlen(my_mac)) == 0){
-        printf("attac_mac == EH_dmac\n");
+        //printf("attac_mac == EH_dmac\n");
         sum += 1;
     }
     else if(strncmp(EH_dmac, "ffffffffffff", strlen(EH_dmac)) == 0){
-        printf("EHDMAC : %s\n", EH_dmac);
-        printf("ffffffffffff == EH_dmac\n");
+        //printf("EHDMAC : %s\n", EH_dmac);
+        //printf("ffffffffffff == EH_dmac\n");
         sum += 10;
     }
     else if(strncmp(EH_dmac, target_mac, strlen(EH_dmac)) == 0){
-        printf("target_mac == EH_dmac\n");
+        //printf("target_mac == EH_dmac\n");
         sum += 100;
     }
-    free(EH_dmac); free(EH_smac);
+    //free(EH_dmac); free(EH_smac);
     return sum;
 }
 // if return 2, Success to find spoofed packet
@@ -57,7 +59,7 @@ int Ethernet_header::Check_Eth(const u_char* Packet_DATA, char* sender_mac, char
 uint8_t Ethernet_header::Print_Eth(const u_char* Packet_DATA){
     struct libnet_ethernet_hdr* EH = (struct libnet_ethernet_hdr*)(Packet_DATA);
     uint8_t result = 0;
-    uint8_t EH_length = (uint8_t)(sizeof(EH));
+    //uint8_t EH_length = (uint8_t)(sizeof(EH));
     u_short ethernet_type;
     ethernet_type = ntohs(EH->ether_type);
     if(ethernet_type == 0x0800){

@@ -6,9 +6,11 @@ int TCP_header::Print_TCP(const u_char* Packet_DATA){
     // TCP data offset check
     if(TH->th_off < 4) return 0;
 
-    char* sp = (char*)malloc(sizeof(TH->th_sport));
+    char sp[6];
+    //char* sp = (char*)malloc(sizeof(TH->th_sport));
     sprintf(sp, "%d", ntohs(TH->th_sport));
-    char* dp = (char*)malloc(sizeof(TH->th_dport));
+    char dp[6];
+    //char* dp = (char*)malloc(sizeof(TH->th_dport));
     sprintf(dp, "%d", ntohs(TH->th_dport));
 
     //printf("sp : %s\n", sp);
@@ -39,6 +41,6 @@ int TCP_header::Print_TCP(const u_char* Packet_DATA){
     printf("[Source] <Port> Number : %d\n", ntohs(TH->th_sport));
     printf("[Destination] <Port> Number : %d\n", ntohs(TH->th_dport));
 
-    free(sp); free(dp);
+    //free(sp); free(dp);
     return ((TH->th_off) * 4);
 }

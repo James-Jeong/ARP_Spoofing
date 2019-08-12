@@ -3,9 +3,12 @@
 int UDP_header::Print_UDP(const u_char* Packet_DATA){
     struct libnet_udp_hdr* UH = (struct libnet_udp_hdr*)(Packet_DATA);
 
-    char* sp = (char*)malloc(sizeof(UH->uh_sport));
+    char sp[6];
+    //char* sp = (char*)malloc(sizeof(UH->uh_sport));
     sprintf(sp, "%d", ntohs(UH->uh_sport));
-    char* dp = (char*)malloc(sizeof(UH->uh_dport));
+
+    char dp[6];
+    //char* dp = (char*)malloc(sizeof(UH->uh_dport));
     sprintf(dp, "%d", ntohs(UH->uh_dport));
 
     //printf("sp : %s\n", sp);
@@ -27,6 +30,6 @@ int UDP_header::Print_UDP(const u_char* Packet_DATA){
     printf("UDP Length : %d\n", UH->uh_ulen);
     printf("UDP checksum : %x\n", UH->uh_sum);
 
-    free(dp); free(sp);
+    //free(dp); free(sp);
     return (UH->uh_ulen);
 }
