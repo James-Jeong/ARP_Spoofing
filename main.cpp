@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
     if(a_mac_addr == NULL){ perror("a_mac_addr malloc error"); exit(1); }
     char* s_ip_addr = (char*)malloc(16);
     if(s_ip_addr == NULL){ perror("s_ip_addr malloc error"); exit(1); }
-    struct Info_mymac* IM = find_My_Mac();
+    struct Info_mymac* IM = find_My_Mac(dev);
     strncpy(a_mac_addr, IM->my_mac, 12);
     a_mac_addr[13] = '\0';
     strncpy(s_ip_addr, IM->my_ip, 16);
