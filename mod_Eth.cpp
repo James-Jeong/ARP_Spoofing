@@ -5,8 +5,6 @@ int Ethernet_header::Check_Eth(const u_char* Packet_DATA, char* sender_mac, char
     struct libnet_ethernet_hdr* EH = (struct libnet_ethernet_hdr*)(Packet_DATA);
 
     char EH_smac[13];
-    //char* EH_smac = (char*)malloc(13);
-    //if(EH_smac == NULL){ perror("EH_smac malloc error"); exit(1); }
     sprintf(EH_smac, "%02x%02x%02x%02x%02x%02x",
         EH->ether_shost[0],
         EH->ether_shost[1],
@@ -16,8 +14,6 @@ int Ethernet_header::Check_Eth(const u_char* Packet_DATA, char* sender_mac, char
         EH->ether_shost[5]);
 
     char EH_dmac[13];
-    //char* EH_dmac = (char*)malloc(13);
-    //if(EH_dmac == NULL){ perror("EH_dmac malloc error"); exit(1); }
     sprintf(EH_dmac, "%02x%02x%02x%02x%02x%02x",
         EH->ether_dhost[0],
         EH->ether_dhost[1],
@@ -26,10 +22,10 @@ int Ethernet_header::Check_Eth(const u_char* Packet_DATA, char* sender_mac, char
         EH->ether_dhost[4],
         EH->ether_dhost[5]);
 
-    //printf("EH_smac : %s\n", EH_smac);
-    //printf("EH_dmac : %s\n", EH_dmac);
+    printf("Currnet packet smac : %s\n", EH_smac);
+    printf("Currnet packet dmac : %s\n", EH_dmac);
     printf("sender mac : %s\n", sender_mac);
-    //printf("target mac : %s\n", target_mac);
+    printf("target mac : %s\n", target_mac);
     printf("attacker_mac : %s\n", my_mac);
 
     // Is sender mac address equal to EH's mac address?

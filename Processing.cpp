@@ -262,7 +262,7 @@ void Manage_Session(struct Parameter_Pthread* pt3){
             if(!strcmp(tmp2, "6"))
                 printf("[ ---------_TCP_--------- ]\n");
             else if(!strcmp(tmp2, "11"))
-                printf("[ ---------_UDP_--------- ]\n");
+                printf("[ ---------_UDP_-----orrect == 2){---- ]\n");
             else
                 printf("[ ------_Unknown Protocol_------ ]\n");
             packet += 20;
@@ -301,13 +301,16 @@ void Manage_Session(struct Parameter_Pthread* pt3){
             char bb[13];
             sprintf(bb, "%02x%02x%02x%02x%02x%02x", Ah->target_ip_addr[0], Ah->target_ip_addr[1], Ah->target_ip_addr[2], Ah->target_ip_addr[3], Ah->target_ip_addr[4], Ah->target_ip_addr[5]);
 
-            printf("[ Attacker's mac : %s ]\n", pt3->attack_mac);
+            printf("[ Attacker mac : %s ]\n", pt3->attack_mac);
+            printf("[ Sender mac : %s ]\n", pt3->smac);
             printf("[ Changed sender mac address : %s ]\n", aa);
-            printf("[ Target mac address : %s ]\n", pt3->tip);
+            printf("[ Target mac address : %s ]\n", pt3->tmac);
             printf("[ Changed target mac address: %s ]\n", bb);
-            if(pcap_sendpacket(pt3->handle,  reinterpret_cast<u_char*>(Ah), 42) != 0){
-                perror("{ send packet error }");
-                exit(1);
+            for(int i = 0; i < 2; i++){ // Relay 2 times
+                if(pcap_sendpacket(pt3->handle,  reinterpret_cast<u_char*>(Ah), 42) != 0){
+                    perror("{ send packet error }");
+                    exit(1);
+                }
             }
             Ethernet_header eh1;
             eh1.Print_Eth(packet);
