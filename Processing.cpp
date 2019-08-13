@@ -82,7 +82,7 @@ void* Attack(void* info){
     }
 }
 
-struct Info_mymac* find_My_Mac(){
+struct Info_mymac* find_My_Mac(char* dev){
     struct Info_mymac* IM = (struct Info_mymac*)malloc(50);
     int sockfd, req_cnt = REQ_CNT;
     char* s_mac_addr = (char*)malloc(sizeof(char)*20);
@@ -114,6 +114,7 @@ struct Info_mymac* find_My_Mac(){
     }
 
     ifr_s = ifcnf_s.ifc_req;
+    // ifr_s.ifr_name
     for(int cnt = 0; cnt < ifcnf_s.ifc_len; cnt += sizeof(struct ifreq), ifr_s++){
         if(ioctl(sockfd, SIOCGIFFLAGS, ifr_s) < 0){
             perror("{ ioctl - SIOCGFFLAGS error }");
@@ -121,13 +122,15 @@ struct Info_mymac* find_My_Mac(){
         }
 
         if(ifr_s->ifr_flags & IFF_LOOPBACK) continue;
-        sock = (struct sockaddr_in*)&ifr_s->ifr_addr;
-        sprintf(s_ip_addr, "%s", inet_ntoa(sock->sin_addr));
-        if(ioctl(sockfd, SIOCGIFHWADDR, ifr_s) < 0){
-            perror("{ ioctl - SIOCGFHWADDR error }");
-            return NULL;
+        if(!strncmp(ifr_s->ifr_name, dev, strlen(dev))){
+            sock = (struct sockaddr_in*)&ifr_s->ifr_addr;
+            sprintf(s_ip_addr, "%s", inet_ntoa(sock->sin_addr));
+            if(ioctl(sockfd, SIOCGIFHWADDR, ifr_s) < 0){
+                perror("{ ioctl - SIOCGFHWADDR error }");
+                return NULL;
+            }
+            strncpy(s_mac_addr, convert_mac(ether_ntoa((struct ether_addr*)(ifr_s->ifr_hwaddr.sa_data))), 20);
         }
-        strncpy(s_mac_addr, convert_mac(ether_ntoa((struct ether_addr*)(ifr_s->ifr_hwaddr.sa_data))), 20);
     }
     char* smac = (char*)malloc(sizeof(char)*20);
     strncpy(smac, delChar(s_mac_addr, ':'), sizeof(char)*20);
