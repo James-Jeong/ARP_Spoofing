@@ -20,7 +20,7 @@ void Session::set(int sn, char* sender_mac, char* sender_ip, char* target_mac, c
     pthread_detach(thread);
 }
 
-void Session::handle_session(){
+/*void Session::handle_session(){
     struct Parameter_Pthread* pt3 = (struct Parameter_Pthread*)malloc(sizeof(struct Parameter_Pthread));
 
     strncpy(pt3->attack_mac, this->attack_mac, 12);
@@ -34,4 +34,4 @@ void Session::handle_session(){
 
     Manage_Session(pt3);
 }
-
+*/

@@ -22,8 +22,8 @@ int Ethernet_header::Check_Eth(const u_char* Packet_DATA, char* sender_mac, char
         EH->ether_dhost[4],
         EH->ether_dhost[5]);
 
-    printf("Currnet packet smac : %s\n", EH_smac);
-    printf("Currnet packet dmac : %s\n", EH_dmac);
+    printf("Current packet smac : %s\n", EH_smac);
+    printf("Current packet dmac : %s\n", EH_dmac);
     printf("sender mac : %s\n", sender_mac);
     printf("target mac : %s\n", target_mac);
     printf("attacker_mac : %s\n", my_mac);
@@ -35,6 +35,9 @@ int Ethernet_header::Check_Eth(const u_char* Packet_DATA, char* sender_mac, char
     }
     if(strncmp(my_mac, EH_dmac, strlen(my_mac)) == 0){
         //printf("attac_mac == EH_dmac\n");
+        sum += 1;
+    }
+    else if(strncmp(EH_dmac, target_mac, strlen(target_mac))){
         sum += 1;
     }
     else if(strncmp(EH_dmac, "ffffffffffff", strlen(EH_dmac)) == 0){
