@@ -3,16 +3,12 @@ using namespace std;
 
 pthread_t thread[PTHREAD_NUM];
 pthread_t attack_thread[PTHREAD_NUM];
-pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 int num_of_parameter = 0;
-pid_t pid[SESSION_NUM];
 pcap_t* handle;
 
 void terminate_Process(int sig){
     if(sig == SIGINT){
         for(int i = 0; i < num_of_parameter; i++){
-            kill(pid[i], SIGKILL);
             pthread_join(thread[i], NULL);
             pthread_join(attack_thread[i], NULL);
         }

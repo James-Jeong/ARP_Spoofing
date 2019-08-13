@@ -393,7 +393,7 @@ void Print_Data(const u_char* Packet_DATA){
 }
 
 void usage(char* device) {
-    printf("{ syntax: ARP_TEST <interface> }\n");
-    printf("{ sample: ARP_TEST %s (sender ip) (target ip) (target ip) (sender ip) (other sessions...) }\n", device);
+    printf("{ syntax: ARP_TEST <interface> (sender ip) (target ip) (target ip) (sender ip) (other sessions...) }\n");
+    printf("{ sample: ARP_TEST %s 192.168.168.101 192.168.168.1 192.168.168.101 ... }\n", device);
 }
 
