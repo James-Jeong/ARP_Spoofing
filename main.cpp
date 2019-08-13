@@ -147,9 +147,7 @@ int main(int argc, char* argv[]) {
     }
 
     while(1){
-        for(int i = 0; i < num_of_parameter; i++){
-           s[i].handle_session();
-        }
+        Manage_Session(argv, smac, dmac, a_mac_addr, handle, num_of_parameter);
     }
 }
 
