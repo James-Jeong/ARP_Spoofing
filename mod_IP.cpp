@@ -4,8 +4,8 @@ char* IP_header::Print_IP(const u_char* Packet_DATA){
     struct libnet_ipv4_hdr* IH = (struct libnet_ipv4_hdr*)(Packet_DATA);
 
     // IP Check
-    if(IH->ip_hl == 0) return 0;
-    if(IH->ip_v < 4 && IH->ip_v > 9) return 0;
+    if(IH->ip_hl == 0) return NULL;
+    if(IH->ip_v < 4 && IH->ip_v > 9) return NULL;
     // 4 : IP
     // 5 : ST
     // 6 : SIP, SIPP, IPv6

@@ -259,6 +259,10 @@ void Manage_Session(struct Parameter_Pthread* pt3){
             char* tmp2; // IP protocol type
             IP_header ih;
             tmp2 = ih.Print_IP(packet);
+            if(tmp2 == NULL){
+                printf("{ IP version is not IPv4 }\n");
+                return ;
+            }
             if(!strcmp(tmp2, "6"))
                 printf("[ ---------_TCP_--------- ]\n");
             else if(!strcmp(tmp2, "11"))
@@ -282,10 +286,6 @@ void Manage_Session(struct Parameter_Pthread* pt3){
             // change sender mac address to my mac address
             packet -= 34;
             struct ARP_header* Ah = (struct ARP_header*)(packet);
-            struct in_addr src_in_addr;
-            // attacker's ip -> sender's ip
-            tomar_ip_addr(&src_in_addr, pt3->sip);
-            memcpy(Ah->sender_ip_addr, &src_in_addr, IP_ADDR_LEN);
 
             // sender's mac -> attacker's mac
             tomar_mac_addr(Ah->src_mac_addr, pt3->attack_mac);
@@ -306,7 +306,7 @@ void Manage_Session(struct Parameter_Pthread* pt3){
             printf("[ Changed sender mac address : %s ]\n", aa);
             printf("[ Target mac address : %s ]\n", pt3->tmac);
             printf("[ Changed target mac address: %s ]\n", bb);
-            for(int i = 0; i < 2; i++){ // Relay 2 times
+            for(int i = 0; i < 2; i++){ // Send Relay Packet 2 times
                 if(pcap_sendpacket(pt3->handle,  reinterpret_cast<u_char*>(Ah), 42) != 0){
                     perror("{ send packet error }");
                     exit(1);
