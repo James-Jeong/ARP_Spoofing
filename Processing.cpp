@@ -255,7 +255,6 @@ void Manage_Session(struct Parameter_Pthread* pt3){
             }
         }
         if(tmp == 1){
-            printf("[ ----------_IP_---------- ]\n");
             packet += 14;
             char* tmp2; // IP protocol type
             IP_header ih;
@@ -275,7 +274,9 @@ void Manage_Session(struct Parameter_Pthread* pt3){
             else if(!strcmp(tmp2, "11")){
                 uh.Print_UDP(packet);
             }
-            else printf("< No Data here for this protocol! >\n");
+            else{
+                printf("{ No Network Data here for this protocol! }\n");
+            }
 
             // Relay
             // change sender mac address to my mac address
@@ -310,10 +311,7 @@ void Manage_Session(struct Parameter_Pthread* pt3){
             }
             Ethernet_header eh1;
             eh1.Print_Eth(packet);
-            printf("\n");
-        }
-        else if(tmp == 2){
-            printf("[ ----------_IP_---------- ]\n");
+            printf("[ Success to send Relay packet! ]\n");
         }
     }
     // Check broadcast packets sended by sender
@@ -394,6 +392,6 @@ void Print_Data(const u_char* Packet_DATA){
 
 void usage(char* device) {
     printf("{ syntax: ARP_TEST <interface> (sender ip) (target ip) (target ip) (sender ip) (other sessions...) }\n");
-    printf("{ sample: ARP_TEST %s 192.168.168.101 192.168.168.1 192.168.168.101 ... }\n", device);
+    printf("{ sample: ARP_TEST %s 192.168.168.101 192.168.168.1 192.168.168.1 192.168.168.101 ... }\n", device);
 }
 

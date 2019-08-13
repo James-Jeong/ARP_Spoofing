@@ -63,15 +63,15 @@ uint8_t Ethernet_header::Print_Eth(const u_char* Packet_DATA){
     u_short ethernet_type;
     ethernet_type = ntohs(EH->ether_type);
     if(ethernet_type == 0x0800){
-        printf("Ethernet type is IP\n");
+        printf("[ ----------_IP_---------- ]\n");
         result = 1;
     }
     else if(ethernet_type == 0x0806){
-        printf("Ethernet type is ARP\n");
+        printf("[ ----------_ARP_---------- ]\n");
         result = 2;
     }
     else{
-        printf("Warning: Unknown Ethernet type!\n");
+        printf("[ ----------_Unknown Ethernet Type_---------- ]\n");
         return 0;
     }
     printf("[Source] <MAC> Address : %02x:%02x:%02x:%02x:%02x:%02x:\n",
