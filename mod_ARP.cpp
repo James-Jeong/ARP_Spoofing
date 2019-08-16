@@ -18,6 +18,7 @@ this->op = htons(OP_ARP_REQUEST);
 
 void Print_ARP(struct ARP_header* a){
     int count = 0;
+
     printf("[ Destination MAC = ");
     for(int i = 0; i < ETH_MAC_ADDR_LEN; i++){
         printf("%02x:", a->Destination_mac_addr[i]);

@@ -147,6 +147,6 @@ int main(int argc, char* argv[]) {
     }
 
     while(1){
-        Manage_Session(argv, smac, dmac, a_mac_addr, handle, num_of_parameter);
+        Manage_Session(argv, smac, dmac, s_ip_addr, a_mac_addr, handle, num_of_parameter);
     }
 }
