@@ -35,9 +35,6 @@ int Ethernet_header::Check_Eth(const u_char* Packet_DATA, char* sender_mac, char
     if(strncmp(my_mac, EH_dmac, strlen(my_mac)) == 0){
         sum += 1;
     }
-    else if(strncmp(EH_dmac, target_mac, strlen(target_mac))){
-        sum += 1;
-    }
     else if(strncmp(EH_dmac, "ffffffffffff", strlen(EH_dmac)) == 0){
         sum += 10;
     } // sender send broadcast packet
@@ -67,7 +64,8 @@ uint8_t Ethernet_header::Print_Eth(const u_char* Packet_DATA){
         printf("[ ----------_Unknown Ethernet Type_---------- ]\n");
         return 0;
     }
-    printf("[Source] <MAC> Address : %02x:%02x:%02x:%02x:%02x:%02x:\n",
+    printf("[ Ethernet Type : %04x ]\n", ntohs(EH->ether_type));
+    printf("[Source] <MAC> Address : %02x:%02x:%02x:%02x:%02x:%02x\n",
         EH->ether_shost[0],
         EH->ether_shost[1],
         EH->ether_shost[2],
@@ -75,7 +73,7 @@ uint8_t Ethernet_header::Print_Eth(const u_char* Packet_DATA){
         EH->ether_shost[4],
         EH->ether_shost[5]);
 
-    printf("[Destination] <MAC> Address : %02x:%02x:%02x:%02x:%02x:%02x:\n",
+    printf("[Destination] <MAC> Address : %02x:%02x:%02x:%02x:%02x:%02x\n",
         EH->ether_dhost[0],
         EH->ether_dhost[1],
         EH->ether_dhost[2],

@@ -18,22 +18,22 @@ this->op = htons(OP_ARP_REQUEST);
 
 void Print_ARP(struct ARP_header* a){
     int count = 0;
-    printf("Destination MAC = ");
+    printf("[ Destination MAC = ");
     for(int i = 0; i < ETH_MAC_ADDR_LEN; i++){
         printf("%02x:", a->Destination_mac_addr[i]);
     }
-    printf("\n");
-    printf("Source MAC = ");
+    printf(" ]\n");
+    printf("[ Source MAC = ");
     for(int i = 0; i < ETH_MAC_ADDR_LEN; i++){
         printf("%02x:", a->src_mac_addr[i]);
     }
-    printf("\n");
-    printf("Sender MAC = ");
+    printf(" ]\n");
+    printf("[ Sender MAC = ");
     for(int i = 0; i < ETH_MAC_ADDR_LEN; i++){
         printf("%02x:", a->sender_mac_addr[i]);
     }
-    printf("\n");
-    printf("Sender IP = ");
+    printf(" ]\n");
+    printf("[ Sender IP = ");
     for(int i = 0; i < IP_ADDR_LEN; i++){
         if(count == 1){
             printf(".");
@@ -42,13 +42,13 @@ void Print_ARP(struct ARP_header* a){
         printf("%d", a->sender_ip_addr[i]);
         count++;
     }
-    printf("\n");
-    printf("Target MAC = ");
+    printf(" ]\n");
+    printf("[ Target MAC = ");
     for(int i = 0; i < ETH_MAC_ADDR_LEN; i++){
         printf("%02x:", a->target_mac_addr[i]);
     }
-    printf("\n");
-    printf("Target IP = ");
+    printf(" ]\n");
+    printf("[ Target IP = ");
     count = 0;
     for(int i = 0; i < IP_ADDR_LEN; i++){
         if(count == 1){
@@ -58,7 +58,7 @@ void Print_ARP(struct ARP_header* a){
         printf("%0d", a->target_ip_addr[i]);
         count++;
     }
-    printf("\n\n");
+    printf(" ]\n\n");
 }
 
 

@@ -150,7 +150,3 @@ int main(int argc, char* argv[]) {
         Manage_Session(argv, smac, dmac, a_mac_addr, handle, num_of_parameter);
     }
 }
-
-
-
-
