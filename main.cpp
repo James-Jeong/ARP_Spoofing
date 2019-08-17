@@ -90,6 +90,7 @@ int main(int argc, char* argv[]) {
     strncpy(s_ip_addr, IM->my_ip, 16);
     a_mac_addr[strlen(a_mac_addr)] = '\0';
     s_ip_addr[strlen(s_ip_addr)] = '\0';
+    printf("[ Success to find my ip address : %s ]\n", s_ip_addr);
     printf("[ Success to find my mac address : %s ]\n", a_mac_addr);
 // ########################################
 
