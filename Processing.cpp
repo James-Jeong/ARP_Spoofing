@@ -367,7 +367,6 @@ void Manage_Session(char** argv, char** smac, char** tmac, char* attack_ip, char
                     printf("[ Success to send Relay packet! ]\n");
                     printf("[ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ]\n");
                     count++;
-                    free(tmp2); free(tmp22);
                 }
                 else{
                     printf("{ Wrong IP address! }\n");
