@@ -271,13 +271,13 @@ void Manage_Session(char** argv, char** smac, char** tmac, char* attack_ip, char
                     break;
                 }
             }
-            if(tmp == 1){
+            if(tmp == 1 || tmp == 2){
                 packet += 14;
                 char* tmp2; // IP protocol type
                 bool isCorrect2 = false;
                 IP_header ih;
                 tmp2 = ih.Print_IP(packet);
-                isCorrect2 = ih.Check_IP(packet, argv[cnt_session], argv[cnt_session+1],attack_ip);
+                isCorrect2 = ih.Check_IP(packet, argv[cnt_session], argv[cnt_session+1], attack_ip);
                 if(isCorrect2 == true){
                     if(tmp2 == NULL){
                         printf("{ IP version is not IPv4 }\n");
@@ -321,11 +321,8 @@ void Manage_Session(char** argv, char** smac, char** tmac, char* attack_ip, char
                     memcpy(eh->ether_dhost,  Ah->Destination_mac_addr, sizeof(Ah->Destination_mac_addr));
                     memcpy(eh->ether_shost, Ah->src_mac_addr, sizeof(Ah->src_mac_addr));
 
-                    for(int i = 0; i < 2; i++){ // Send Relay Packet 2 times
-                        if(pcap_sendpacket(handle,  reinterpret_cast<u_char*>(eh), header->caplen) != 0){
-                            perror("{ send packet error }");
-                            exit(1);
-                        }
+                    if(pcap_sendpacket(handle,  reinterpret_cast<u_char*>(eh), header->caplen) != 0){
+                        perror("{ send packet error }");
                     }
 
                     printf("\n< After Relay Packet Info >\n");
