@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
     int cnt = 2;
 
     // P Mode
-    handle = pcap_open_live(dev, BUFSIZ, PROMISCUOUS_MODE, 100, errbuf);
+    handle = pcap_open_live(dev, BUFSIZ, PROMISCUOUS_MODE, 1000, errbuf);
     if (handle == NULL) {
         fprintf(stderr, "handle couldn't open device %s: %s\n", dev, errbuf);
         return -1;

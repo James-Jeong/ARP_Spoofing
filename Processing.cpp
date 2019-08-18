@@ -277,7 +277,7 @@ void Manage_Session(char** argv, char** smac, char** tmac, char* attack_ip, char
                 bool isCorrect2 = false;
                 IP_header ih;
                 tmp2 = ih.Print_IP(packet);
-                isCorrect2 = ih.Check_IP(packet, argv[cnt_session], argv[cnt_session+1]);
+                isCorrect2 = ih.Check_IP(packet, argv[cnt_session], argv[cnt_session+1], attack_ip);
                 if(isCorrect2 == true){
                     printf("\n< Before Relay Packet Info >\n");
                     if(tmp2 == NULL){
@@ -320,7 +320,7 @@ void Manage_Session(char** argv, char** smac, char** tmac, char* attack_ip, char
                     memcpy(eh->ether_shost, Ah->src_mac_addr, sizeof(Ah->src_mac_addr));
 
                     // reinterpret_cast<u_char*>(eh)
-                    if(pcap_sendpacket(handle, packet, header->caplen) != 0){
+                    if(pcap_sendpacket(handle, packet, header->len) != 0){
                         perror("{ send packet error }");
                     }
 
