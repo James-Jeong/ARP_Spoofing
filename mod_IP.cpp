@@ -1,9 +1,12 @@
 #include "stdafx.h"
 
-bool IP_header::Check_IP(const u_char* Packet_DATA, char* sip, char* dip){
+bool IP_header::Check_IP(const u_char* Packet_DATA, char* sip, char* dip, char* attack_ip){
     struct libnet_ipv4_hdr* IH = (struct libnet_ipv4_hdr*)(Packet_DATA);
     int a = 0;
     int b = 0;
+    if(((a = strncmp(inet_ntoa(IH->ip_dst), attack_ip, strlen(attack_ip))) == 0)){
+        return true;
+    }
     if(((a = strncmp(inet_ntoa(IH->ip_src), sip, strlen(sip))) == 0) ||
        (b = strncmp(inet_ntoa(IH->ip_dst), dip, strlen(dip))) == 0){
         return true;
