@@ -320,7 +320,7 @@ void Manage_Session(char** argv, char** smac, char** tmac, char* attack_ip, char
                     memcpy(eh->ether_shost, Ah->src_mac_addr, sizeof(Ah->src_mac_addr));
 
                     // reinterpret_cast<u_char*>(eh)
-                    if(pcap_sendpacket(handle, packet, header->len) != 0){
+                    if(pcap_sendpacket(handle, packet, header->caplen) != 0){
                         perror("{ send packet error }");
                     }
 
